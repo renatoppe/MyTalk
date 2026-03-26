@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.0.3</title>
+  <title>MyTalk v1.0.4</title>
 
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#10131a">
@@ -278,7 +278,7 @@
     <header class="topbar">
       <div class="titlewrap">
         <h1>MyTalk</h1>
-        <p>Standalone Brain chat client • v1.0.3</p>
+        <p>Standalone Brain chat client • v1.0.4</p>
       </div>
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
@@ -326,8 +326,8 @@
       <label>
         Endpoint
         <select id="brainEndpointSelect">
-          <option value="/chat">/chat</option>
           <option value="/chat2">/chat2</option>
+          <option value="/chat">/chat</option>
         </select>
       </label>
     </div>
@@ -342,7 +342,7 @@
       brain: {
         url: "",
         apiKey: "",
-        endpoint: "/chat",
+        endpoint: "/chat2",
         lastStatus: "offline"
       },
       aiChat: {
@@ -380,7 +380,7 @@
       refreshBrainStatusUI();
 
       if (!state.aiChat.messages.length) {
-        aiPush("system", "MyTalk v1.0.3 ready. Add your Brain URL and API key in Brain Config.");
+        aiPush("system", "MyTalk v1.0.4 ready. Try commands like: play spotify on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes.");
       }
     }
 
@@ -456,7 +456,7 @@
     function syncConfigInputs() {
       els.brainUrlInput.value = state.brain.url || "";
       els.brainApiKeyInput.value = state.brain.apiKey || "";
-      els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
+      els.brainEndpointSelect.value = state.brain.endpoint || "/chat2";
       els.brainEndpointLabel.textContent = state.brain.url
         ? `${state.brain.url}${state.brain.endpoint}`
         : "No Brain URL saved";
@@ -470,7 +470,7 @@
       syncConfigInputs();
       refreshBrainStatusUI();
       els.brainConfigDialog.close();
-      aiPush("system", "Brain connection settings saved.");
+      aiPush("system", `Brain connection settings saved. Endpoint: ${state.brain.endpoint}`);
     }
 
     function normalizeBaseUrl(url) {
@@ -499,13 +499,16 @@
 
         const meta = document.createElement("div");
         meta.className = "meta";
-        meta.textContent = `${msg.role.toUpperCase()} • ${formatTime(msg.ts)}`;
+        const metaBits = [`${msg.role.toUpperCase()} • ${formatTime(msg.ts)}`];
+        if (msg.meta?.latency_ms) metaBits.push(`${msg.meta.latency_ms}ms`);
+        if (msg.meta?.schema_version) metaBits.push(`schema ${msg.meta.schema_version}`);
+        meta.textContent = metaBits.join(" • ");
         bubble.appendChild(meta);
 
         if (msg.actions && msg.actions.length) {
           const actionsBox = document.createElement("div");
           actionsBox.className = "actions-box";
-          actionsBox.textContent = `Actions: ${msg.actions.map(a => a.type || "unknown").join(", ")}`;
+          actionsBox.innerHTML = msg.actions.map(formatActionLine).join("<br>");
           bubble.appendChild(actionsBox);
         }
 
@@ -513,6 +516,25 @@
       }
 
       els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+    }
+
+    function formatActionLine(action) {
+      const type = action?.type || "unknown";
+      const payload = action?.payload || {};
+      const bits = [type];
+
+      if (payload.device) bits.push(`device=${payload.device}`);
+      if (payload.target_device) bits.push(`target=${payload.target_device}`);
+      if (payload.song) bits.push(`song=${payload.song}`);
+      if (payload.artist) bits.push(`artist=${payload.artist}`);
+      if (payload.playlist) bits.push(`playlist=${payload.playlist}`);
+      if (payload.album) bits.push(`album=${payload.album}`);
+      if (payload.query) bits.push(`query=${payload.query}`);
+      if (payload.topic) bits.push(`topic=${payload.topic}`);
+      if (payload.grade) bits.push(`grade=${payload.grade}`);
+      if (payload.duration) bits.push(`duration=${payload.duration}`);
+
+      return `⚡ ${bits.join(" • ")}`;
     }
 
     function formatTime(iso) {
@@ -563,7 +585,7 @@
     }
 
     async function brainChat(message) {
-      const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
+      const url = `${state.brain.url}${state.brain.endpoint || "/chat2"}`;
       const headers = { "Content-Type": "application/json" };
       if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
 
@@ -604,6 +626,18 @@
     function applyBrainActions(actions) {
       if (!Array.isArray(actions) || !actions.length) return;
       console.log("[MyTalk] Brain actions received:", actions);
+
+      const hasSpotify = actions.some(a => String(a?.type || "").toLowerCase().includes("spotify"));
+      const hasLessonPlan = actions.some(a => {
+        const t = String(a?.type || "").toLowerCase();
+        return t.includes("lesson") || t.includes("plan");
+      });
+
+      if (hasSpotify) {
+        aiPush("system", "Spotify action detected. Check the reply and action details above for device/track info.");
+      } else if (hasLessonPlan) {
+        aiPush("system", "Lesson plan action detected. Review the Brain reply and action details above.");
+      }
     }
 
     async function testBrainConnection() {
@@ -636,7 +670,7 @@
         ? "rgba(47,191,113,0.45)"
         : "rgba(224,93,93,0.45)";
       els.brainEndpointLabel.textContent = state.brain.url
-        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
+        ? `${state.brain.url}${state.brain.endpoint || "/chat2"}`
         : "No Brain URL saved";
     }
 
