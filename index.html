@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1</title>
+  <title>MyTalk v1.0.3</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#10131a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MyTalk">
+
   <style>
     :root {
       --bg: #0f1115;
@@ -17,10 +24,13 @@
       --border: #2a3140;
       --user: #21314d;
       --brain: #1c2a22;
+      --system: #2d2415;
+      --system-text: #f3d088;
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -51,6 +61,8 @@
       top: 0;
       backdrop-filter: blur(8px);
       z-index: 10;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .titlewrap h1 {
@@ -81,7 +93,13 @@
     }
 
     button:hover { border-color: var(--accent); }
-    button.primary { background: var(--accent); color: #08111f; border-color: transparent; font-weight: 700; }
+    button:disabled { opacity: 0.6; cursor: default; }
+    button.primary {
+      background: var(--accent);
+      color: #08111f;
+      border-color: transparent;
+      font-weight: 700;
+    }
 
     .statusbar {
       padding: 10px 16px;
@@ -136,8 +154,8 @@
 
     .bubble.system {
       align-self: center;
-      background: #2d2415;
-      color: #f3d088;
+      background: var(--system);
+      color: var(--system-text);
       max-width: 92%;
     }
 
@@ -259,8 +277,8 @@
   <div class="app">
     <header class="topbar">
       <div class="titlewrap">
-        <h1>MyTalk v1</h1>
-        <p>Standalone Brain chat client • v1.0.2</p>
+        <h1>MyTalk</h1>
+        <p>Standalone Brain chat client • v1.0.3</p>
       </div>
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
@@ -320,7 +338,6 @@
 
   <script>
     const MYTALK_STORAGE_KEY = "mytalk_state_v1";
-
     const defaultState = {
       brain: {
         url: "",
@@ -363,18 +380,21 @@
       refreshBrainStatusUI();
 
       if (!state.aiChat.messages.length) {
-        aiPush("system", "MyTalk v1 ready. Add your Brain URL and API key in Brain Config.");
+        aiPush("system", "MyTalk v1.0.3 ready. Add your Brain URL and API key in Brain Config.");
       }
     }
 
     function bindEvents() {
       els.aiSendBtn.addEventListener("click", () => aiSendMessage());
+
       els.attachBtn.addEventListener("click", () => {
         aiPush("system", "Attach is ready in the UI. Image/file capability will be enabled when Brain supports it.");
       });
+
       els.micBtn.addEventListener("click", () => {
         aiPush("system", "Microphone will be added in the next version. For now, type your message here.");
       });
+
       els.aiInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
@@ -397,10 +417,10 @@
     function loadState() {
       try {
         const raw = localStorage.getItem(MYTALK_STORAGE_KEY);
-        if (!raw) return structuredClone(defaultState);
-        return deepMerge(structuredClone(defaultState), JSON.parse(raw));
+        if (!raw) return clone(defaultState);
+        return deepMerge(clone(defaultState), JSON.parse(raw));
       } catch {
-        return structuredClone(defaultState);
+        return clone(defaultState);
       }
     }
 
@@ -408,15 +428,28 @@
       localStorage.setItem(MYTALK_STORAGE_KEY, JSON.stringify(state));
     }
 
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
     function deepMerge(base, extra) {
       if (!extra || typeof extra !== "object") return base;
+
       for (const [key, value] of Object.entries(extra)) {
-        if (value && typeof value === "object" && !Array.isArray(value) && base[key] && typeof base[key] === "object" && !Array.isArray(base[key])) {
+        if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          base[key] &&
+          typeof base[key] === "object" &&
+          !Array.isArray(base[key])
+        ) {
           base[key] = deepMerge(base[key], value);
         } else {
           base[key] = value;
         }
       }
+
       return base;
     }
 
@@ -484,7 +517,7 @@
 
     function formatTime(iso) {
       try {
-        return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       } catch {
         return "--:--";
       }
@@ -512,8 +545,7 @@
         applyBrainActions(actions);
         state.brain.lastStatus = "online";
       } catch (err) {
-        const msg = classifyBrainError(err);
-        aiPush("system", msg);
+        aiPush("system", classifyBrainError(err));
         state.brain.lastStatus = "offline";
       } finally {
         saveState();
@@ -526,6 +558,8 @@
       els.aiSendBtn.disabled = isBusy;
       els.aiSendBtn.textContent = isBusy ? "Sending..." : "Send";
       els.aiInput.disabled = isBusy;
+      els.attachBtn.disabled = isBusy;
+      els.micBtn.disabled = isBusy;
     }
 
     async function brainChat(message) {
@@ -533,11 +567,15 @@
       const headers = { "Content-Type": "application/json" };
       if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
 
-      const response = await fetchWithTimeout(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ message, scope: "global" })
-      }, 20000);
+      const response = await fetchWithTimeout(
+        url,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ message, scope: "global" })
+        },
+        20000
+      );
 
       if (!response.ok) {
         const text = await response.text().catch(() => "");
@@ -550,6 +588,7 @@
     function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
+
       return fetch(url, { ...options, signal: controller.signal })
         .finally(() => clearTimeout(timer));
     }
@@ -575,6 +614,7 @@
       }
 
       const healthUrl = `${state.brain.url}/health`;
+
       try {
         const res = await fetchWithTimeout(healthUrl, { method: "GET" }, 8000);
         if (!res.ok) throw new Error(`Health HTTP ${res.status}`);
@@ -592,10 +632,20 @@
     function refreshBrainStatusUI() {
       const online = state.brain.lastStatus === "online";
       els.brainStatusPill.textContent = online ? "🟢 Brain Connected" : "🔴 Brain Offline";
-      els.brainStatusPill.style.borderColor = online ? "rgba(47,191,113,0.45)" : "rgba(224,93,93,0.45)";
+      els.brainStatusPill.style.borderColor = online
+        ? "rgba(47,191,113,0.45)"
+        : "rgba(224,93,93,0.45)";
       els.brainEndpointLabel.textContent = state.brain.url
         ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
         : "No Brain URL saved";
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch((err) => console.error("Service Worker failed:", err));
+      });
     }
   </script>
 </body>
