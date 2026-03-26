@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyTalk v1</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1f2430;
+      --text: #e8ecf1;
+      --muted: #97a3b6;
+      --accent: #58a6ff;
+      --ok: #2fbf71;
+      --bad: #e05d5d;
+      --border: #2a3140;
+      --user: #21314d;
+      --brain: #1c2a22;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 860px;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      background: linear-gradient(180deg, #10131a 0%, #0f1115 100%);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(23, 26, 33, 0.92);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+
+    .titlewrap h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .titlewrap p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); color: #08111f; border-color: transparent; font-weight: 700; }
+
+    .statusbar {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      background: var(--panel);
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+
+    .messages {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bubble {
+      max-width: 85%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+
+    .bubble.user {
+      align-self: flex-end;
+      background: var(--user);
+    }
+
+    .bubble.brain {
+      align-self: flex-start;
+      background: var(--brain);
+    }
+
+    .bubble.system {
+      align-self: center;
+      background: #2d2415;
+      color: #f3d088;
+      max-width: 92%;
+    }
+
+    .meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .actions-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px dashed var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .composer {
+      border-top: 1px solid var(--border);
+      background: rgba(23, 26, 33, 0.96);
+      padding: 14px 16px 18px;
+      position: sticky;
+      bottom: 0;
+    }
+
+    .composer-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 72px;
+      max-height: 180px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+    }
+
+    .composer-actions {
+      display: grid;
+      gap: 10px;
+      min-width: 140px;
+    }
+
+    .helper {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    dialog {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 18px;
+      width: min(560px, calc(100vw - 24px));
+      padding: 0;
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,0.55); }
+
+    .modal-head, .modal-body, .modal-foot {
+      padding: 16px;
+    }
+
+    .modal-head {
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      display: grid;
+      gap: 12px;
+    }
+
+    .modal-body label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .modal-body input, .modal-body select {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .modal-foot {
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .composer-inner { grid-template-columns: 1fr; }
+      .composer-actions { grid-template-columns: 1fr 1fr 1fr; min-width: 0; }
+      .bubble { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="titlewrap">
+        <h1>MyTalk v1</h1>
+        <p>Standalone Brain chat client • v1.0.2</p>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="testBrainBtn">Test Brain</button>
+        <button type="button" id="brainConfigBtn">Brain Config</button>
+        <button type="button" id="clearChatBtn">Clear Chat</button>
+      </div>
+    </header>
+
+    <div class="statusbar">
+      <div class="status-pill" id="brainStatusPill">🔴 Brain Offline</div>
+      <div id="brainEndpointLabel">No Brain URL saved</div>
+    </div>
+
+    <main class="messages" id="aiMessages"></main>
+
+    <footer class="composer">
+      <div class="composer-inner">
+        <div>
+          <textarea id="aiInput" placeholder="Talk to Brain..."></textarea>
+          <div class="helper">Enter sends. Shift+Enter makes a new line.</div>
+        </div>
+        <div class="composer-actions">
+          <button type="button" id="attachBtn">Attach</button>
+          <button type="button" id="micBtn">Microphone</button>
+          <button type="button" class="primary" id="aiSendBtn">Send</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="brainConfigDialog">
+    <div class="modal-head">
+      <strong>Brain connection</strong>
+      <button type="button" id="closeConfigBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>
+        Brain URL
+        <input id="brainUrlInput" type="text" placeholder="https://brain.tailac2201.ts.net" />
+      </label>
+      <label>
+        API Key
+        <input id="brainApiKeyInput" type="password" placeholder="X-API-Key" />
+      </label>
+      <label>
+        Endpoint
+        <select id="brainEndpointSelect">
+          <option value="/chat">/chat</option>
+          <option value="/chat2">/chat2</option>
+        </select>
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button type="button" id="saveConfigBtn" class="primary">Save</button>
+    </div>
+  </dialog>
+
+  <script>
+    const MYTALK_STORAGE_KEY = "mytalk_state_v1";
+
+    const defaultState = {
+      brain: {
+        url: "",
+        apiKey: "",
+        endpoint: "/chat",
+        lastStatus: "offline"
+      },
+      aiChat: {
+        messages: []
+      }
+    };
+
+    let state = loadState();
+
+    const els = {
+      aiMessages: document.getElementById("aiMessages"),
+      aiInput: document.getElementById("aiInput"),
+      aiSendBtn: document.getElementById("aiSendBtn"),
+      attachBtn: document.getElementById("attachBtn"),
+      micBtn: document.getElementById("micBtn"),
+      clearChatBtn: document.getElementById("clearChatBtn"),
+      brainConfigBtn: document.getElementById("brainConfigBtn"),
+      testBrainBtn: document.getElementById("testBrainBtn"),
+      brainStatusPill: document.getElementById("brainStatusPill"),
+      brainEndpointLabel: document.getElementById("brainEndpointLabel"),
+      brainConfigDialog: document.getElementById("brainConfigDialog"),
+      closeConfigBtn: document.getElementById("closeConfigBtn"),
+      saveConfigBtn: document.getElementById("saveConfigBtn"),
+      brainUrlInput: document.getElementById("brainUrlInput"),
+      brainApiKeyInput: document.getElementById("brainApiKeyInput"),
+      brainEndpointSelect: document.getElementById("brainEndpointSelect")
+    };
+
+    init();
+
+    function init() {
+      bindEvents();
+      syncConfigInputs();
+      renderAIMessages();
+      refreshBrainStatusUI();
+
+      if (!state.aiChat.messages.length) {
+        aiPush("system", "MyTalk v1 ready. Add your Brain URL and API key in Brain Config.");
+      }
+    }
+
+    function bindEvents() {
+      els.aiSendBtn.addEventListener("click", () => aiSendMessage());
+      els.attachBtn.addEventListener("click", () => {
+        aiPush("system", "Attach is ready in the UI. Image/file capability will be enabled when Brain supports it.");
+      });
+      els.micBtn.addEventListener("click", () => {
+        aiPush("system", "Microphone will be added in the next version. For now, type your message here.");
+      });
+      els.aiInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          aiSendMessage();
+        }
+      });
+
+      els.clearChatBtn.addEventListener("click", () => {
+        state.aiChat.messages = [];
+        saveState();
+        renderAIMessages();
+      });
+
+      els.brainConfigBtn.addEventListener("click", () => els.brainConfigDialog.showModal());
+      els.closeConfigBtn.addEventListener("click", () => els.brainConfigDialog.close());
+      els.saveConfigBtn.addEventListener("click", saveBrainConfig);
+      els.testBrainBtn.addEventListener("click", testBrainConnection);
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(MYTALK_STORAGE_KEY);
+        if (!raw) return structuredClone(defaultState);
+        return deepMerge(structuredClone(defaultState), JSON.parse(raw));
+      } catch {
+        return structuredClone(defaultState);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(MYTALK_STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function deepMerge(base, extra) {
+      if (!extra || typeof extra !== "object") return base;
+      for (const [key, value] of Object.entries(extra)) {
+        if (value && typeof value === "object" && !Array.isArray(value) && base[key] && typeof base[key] === "object" && !Array.isArray(base[key])) {
+          base[key] = deepMerge(base[key], value);
+        } else {
+          base[key] = value;
+        }
+      }
+      return base;
+    }
+
+    function syncConfigInputs() {
+      els.brainUrlInput.value = state.brain.url || "";
+      els.brainApiKeyInput.value = state.brain.apiKey || "";
+      els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
+      els.brainEndpointLabel.textContent = state.brain.url
+        ? `${state.brain.url}${state.brain.endpoint}`
+        : "No Brain URL saved";
+    }
+
+    function saveBrainConfig() {
+      state.brain.url = normalizeBaseUrl(els.brainUrlInput.value);
+      state.brain.apiKey = els.brainApiKeyInput.value.trim();
+      state.brain.endpoint = els.brainEndpointSelect.value;
+      saveState();
+      syncConfigInputs();
+      refreshBrainStatusUI();
+      els.brainConfigDialog.close();
+      aiPush("system", "Brain connection settings saved.");
+    }
+
+    function normalizeBaseUrl(url) {
+      return (url || "").trim().replace(/\/+$/, "");
+    }
+
+    function aiPush(role, text, extra = {}) {
+      state.aiChat.messages.push({
+        id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        role,
+        text,
+        ts: new Date().toISOString(),
+        ...extra
+      });
+      saveState();
+      renderAIMessages();
+    }
+
+    function renderAIMessages() {
+      els.aiMessages.innerHTML = "";
+
+      for (const msg of state.aiChat.messages) {
+        const bubble = document.createElement("div");
+        bubble.className = `bubble ${msg.role}`;
+        bubble.textContent = msg.text || "";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = `${msg.role.toUpperCase()} • ${formatTime(msg.ts)}`;
+        bubble.appendChild(meta);
+
+        if (msg.actions && msg.actions.length) {
+          const actionsBox = document.createElement("div");
+          actionsBox.className = "actions-box";
+          actionsBox.textContent = `Actions: ${msg.actions.map(a => a.type || "unknown").join(", ")}`;
+          bubble.appendChild(actionsBox);
+        }
+
+        els.aiMessages.appendChild(bubble);
+      }
+
+      els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+    }
+
+    function formatTime(iso) {
+      try {
+        return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        return "--:--";
+      }
+    }
+
+    async function aiSendMessage(forceText = "") {
+      const message = (forceText || els.aiInput.value || "").trim();
+      if (!message) return;
+
+      if (!state.brain.url) {
+        aiPush("system", "Set your Brain URL first in Brain Config.");
+        els.brainConfigDialog.showModal();
+        return;
+      }
+
+      aiPush("user", message);
+      els.aiInput.value = "";
+      setComposerBusy(true);
+
+      try {
+        const data = await brainChat(message);
+        const reply = data?.reply || data?.message || "No reply returned.";
+        const actions = Array.isArray(data?.actions) ? data.actions : [];
+        aiPush("brain", reply, { actions, meta: data?.meta || {} });
+        applyBrainActions(actions);
+        state.brain.lastStatus = "online";
+      } catch (err) {
+        const msg = classifyBrainError(err);
+        aiPush("system", msg);
+        state.brain.lastStatus = "offline";
+      } finally {
+        saveState();
+        refreshBrainStatusUI();
+        setComposerBusy(false);
+      }
+    }
+
+    function setComposerBusy(isBusy) {
+      els.aiSendBtn.disabled = isBusy;
+      els.aiSendBtn.textContent = isBusy ? "Sending..." : "Send";
+      els.aiInput.disabled = isBusy;
+    }
+
+    async function brainChat(message) {
+      const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
+      const headers = { "Content-Type": "application/json" };
+      if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
+
+      const response = await fetchWithTimeout(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message, scope: "global" })
+      }, 20000);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(`Brain HTTP ${response.status}${text ? ` — ${text}` : ""}`);
+      }
+
+      return response.json();
+    }
+
+    function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(timer));
+    }
+
+    function classifyBrainError(err) {
+      const raw = String(err?.message || err || "Unknown Brain error");
+      if (raw.includes("Failed to fetch")) return "Could not reach Brain. Check URL, network, or Tailscale.";
+      if (raw.includes("401") || raw.includes("403")) return "Brain rejected the request. Check the API key.";
+      if (raw.includes("AbortError")) return "Brain request timed out.";
+      return `Brain error: ${raw}`;
+    }
+
+    function applyBrainActions(actions) {
+      if (!Array.isArray(actions) || !actions.length) return;
+      console.log("[MyTalk] Brain actions received:", actions);
+    }
+
+    async function testBrainConnection() {
+      if (!state.brain.url) {
+        aiPush("system", "Set your Brain URL first in Brain Config.");
+        els.brainConfigDialog.showModal();
+        return;
+      }
+
+      const healthUrl = `${state.brain.url}/health`;
+      try {
+        const res = await fetchWithTimeout(healthUrl, { method: "GET" }, 8000);
+        if (!res.ok) throw new Error(`Health HTTP ${res.status}`);
+        aiPush("system", `Brain reachable at ${healthUrl}`);
+        state.brain.lastStatus = "online";
+      } catch (err) {
+        aiPush("system", classifyBrainError(err));
+        state.brain.lastStatus = "offline";
+      } finally {
+        saveState();
+        refreshBrainStatusUI();
+      }
+    }
+
+    function refreshBrainStatusUI() {
+      const online = state.brain.lastStatus === "online";
+      els.brainStatusPill.textContent = online ? "🟢 Brain Connected" : "🔴 Brain Offline";
+      els.brainStatusPill.style.borderColor = online ? "rgba(47,191,113,0.45)" : "rgba(224,93,93,0.45)";
+      els.brainEndpointLabel.textContent = state.brain.url
+        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
+        : "No Brain URL saved";
+    }
+  </script>
+</body>
+</html>
