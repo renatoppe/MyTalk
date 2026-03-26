@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.1.2</title>
+  <title>MyTalk v1.2.1</title>
 
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#10131a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MyTalk">
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#10131a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MyTalk" />
 
   <style>
     :root {
       --bg: #0f1115;
       --panel: #171a21;
       --panel-2: #1f2430;
+      --panel-3: #11151d;
       --text: #e8ecf1;
       --muted: #97a3b6;
       --accent: #58a6ff;
+      --accent-2: #7cc0ff;
       --border: #2a3140;
       --user: #21314d;
       --brain: #1c2a22;
@@ -26,9 +28,14 @@
       --system-text: #f3d088;
       --ok: #2fbf71;
       --bad: #e05d5d;
-      --card: rgba(255,255,255,0.04);
+      --warn: #ffcc66;
       --spotify: #1db954;
-      --lesson: #ffcc66;
+      --shopping: #ffa657;
+      --lesson: #8b5cf6;
+      --task: #f97316;
+      --generic: #7c8aa5;
+      --card: rgba(255,255,255,0.04);
+      --shadow: 0 8px 24px rgba(0,0,0,0.22);
     }
 
     * { box-sizing: border-box; }
@@ -46,10 +53,10 @@
 
     .app {
       width: 100%;
-      max-width: 860px;
+      max-width: 920px;
       min-height: 100vh;
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
+      grid-template-rows: auto auto auto 1fr auto;
       background: linear-gradient(180deg, #10131a 0%, #0f1115 100%);
     }
 
@@ -57,20 +64,20 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
-      background: rgba(23, 26, 33, 0.92);
+      background: rgba(23, 26, 33, 0.94);
       position: sticky;
       top: 0;
-      backdrop-filter: blur(8px);
-      z-index: 10;
-      gap: 12px;
+      z-index: 20;
+      backdrop-filter: blur(10px);
       flex-wrap: wrap;
     }
 
     .titlewrap h1 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
     }
 
     .titlewrap p {
@@ -90,7 +97,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 5px 10px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: var(--panel-2);
@@ -113,6 +120,7 @@
       padding: 10px 14px;
       cursor: pointer;
       font-size: 14px;
+      transition: 120ms ease;
     }
 
     button:hover { border-color: var(--accent); }
@@ -125,16 +133,69 @@
       font-weight: 700;
     }
 
-    .statusbar {
+    .subbar, .quickbar {
       padding: 10px 16px;
       border-bottom: 1px solid var(--border);
+      background: var(--panel);
       display: flex;
-      justify-content: space-between;
       gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .subbar-left, .subbar-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
       color: var(--muted);
       font-size: 13px;
-      background: var(--panel);
+    }
+
+    .quickbar {
+      background: rgba(19, 23, 31, 0.92);
+      position: sticky;
+      top: 68px;
+      z-index: 15;
+    }
+
+    .quick-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-right: 2px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent-2);
     }
 
     .messages {
@@ -143,17 +204,18 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      min-height: 0;
     }
 
     .bubble {
-      max-width: 85%;
+      max-width: 88%;
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 12px 14px;
       line-height: 1.45;
       white-space: pre-wrap;
       word-break: break-word;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+      box-shadow: var(--shadow);
     }
 
     .bubble.user {
@@ -170,7 +232,7 @@
       align-self: center;
       background: var(--system);
       color: var(--system-text);
-      max-width: 92%;
+      max-width: 94%;
     }
 
     .meta {
@@ -199,9 +261,19 @@
       background: rgba(29,185,84,0.08);
     }
 
+    .action-card.shopping {
+      border-color: rgba(255,166,87,0.35);
+      background: rgba(255,166,87,0.08);
+    }
+
     .action-card.lesson {
-      border-color: rgba(255,204,102,0.35);
-      background: rgba(255,204,102,0.08);
+      border-color: rgba(139,92,246,0.35);
+      background: rgba(139,92,246,0.08);
+    }
+
+    .action-card.task {
+      border-color: rgba(249,115,22,0.35);
+      background: rgba(249,115,22,0.08);
     }
 
     .action-title {
@@ -211,16 +283,32 @@
       margin-bottom: 4px;
     }
 
-    .action-line {
-      margin-top: 2px;
+    .action-line { margin-top: 2px; }
+
+    .debug-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(124,138,165,0.08);
+      border: 1px dashed rgba(124,138,165,0.35);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .typing {
+      align-self: flex-start;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 0 4px;
     }
 
     .composer {
       border-top: 1px solid var(--border);
-      background: rgba(23, 26, 33, 0.96);
+      background: rgba(23, 26, 33, 0.97);
       padding: 14px 16px 18px;
       position: sticky;
       bottom: 0;
+      z-index: 20;
     }
 
     .composer-inner {
@@ -246,13 +334,17 @@
     .composer-actions {
       display: grid;
       gap: 10px;
-      min-width: 140px;
+      min-width: 150px;
     }
 
     .helper {
       margin-top: 8px;
       color: var(--muted);
       font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     dialog {
@@ -260,7 +352,7 @@
       background: var(--panel);
       color: var(--text);
       border-radius: 18px;
-      width: min(560px, calc(100vw - 24px));
+      width: min(600px, calc(100vw - 24px));
       padding: 0;
     }
 
@@ -306,10 +398,16 @@
       gap: 8px;
     }
 
-    @media (max-width: 640px) {
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
       .composer-inner { grid-template-columns: 1fr; }
       .composer-actions { grid-template-columns: 1fr 1fr 1fr; min-width: 0; }
       .bubble { max-width: 100%; }
+      .quickbar { top: 74px; }
     }
   </style>
 </head>
@@ -318,11 +416,12 @@
     <header class="topbar">
       <div class="titlewrap">
         <div class="title-row">
-          <h1>MyTalk v1</h1>
+          <h1>MyTalk</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.1.2</p>
+        <p>Standalone Brain chat client • v1.2.1</p>
       </div>
+
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
         <button type="button" id="brainConfigBtn">Brain Config</button>
@@ -330,8 +429,32 @@
       </div>
     </header>
 
-    <div class="statusbar">
-      <div id="brainEndpointLabel">No Brain URL saved</div>
+    <div class="subbar">
+      <div class="subbar-left">
+        <div class="pill" id="brainEndpointLabel">No Brain URL saved</div>
+        <div class="pill" id="defaultDevicePill">Default Spotify device: bedroom</div>
+      </div>
+      <div class="subbar-right">
+        <label class="pill">
+          <input type="checkbox" id="debugToggle" />
+          Debug
+        </label>
+        <div class="pill" id="lastActionPill">Last action: none</div>
+      </div>
+    </div>
+
+    <div class="quickbar">
+      <span class="quick-label">Quick actions</span>
+      <div class="chips">
+        <button class="chip" data-fill="play spotify on bedroom">Play bedroom</button>
+        <button class="chip" data-fill="pause spotify on bedroom">Pause bedroom</button>
+        <button class="chip" data-fill="play spotify playlist gym on bedroom">Gym playlist</button>
+        <button class="chip" data-fill="play spotify playlist sapuleco on bedroom">Sapuleco</button>
+        <button class="chip" data-fill="play spotify song so easy by olivia on bedroom">Olivia - So Easy</button>
+        <button class="chip" data-fill="shopping add: milk">Add milk</button>
+        <button class="chip" data-fill="shopping add: eggs">Add eggs</button>
+        <button class="chip" data-fill="lesson plan grade 4 animals 80 minutes">Lesson plan G4</button>
+      </div>
     </div>
 
     <main class="messages" id="aiMessages"></main>
@@ -340,7 +463,10 @@
       <div class="composer-inner">
         <div>
           <textarea id="aiInput" placeholder="Talk to Brain..."></textarea>
-          <div class="helper">Enter sends. Shift+Enter makes a new line.</div>
+          <div class="helper">
+            <span>Enter sends. Shift+Enter makes a new line.</span>
+            <span id="helperState">Ready</span>
+          </div>
         </div>
         <div class="composer-actions">
           <button type="button" id="attachBtn">Attach</button>
@@ -356,15 +482,18 @@
       <strong>Brain connection</strong>
       <button type="button" id="closeConfigBtn">✕</button>
     </div>
+
     <div class="modal-body">
       <label>
         Brain URL
         <input id="brainUrlInput" type="text" placeholder="https://brain.tailac2201.ts.net" />
       </label>
+
       <label>
         API Key
         <input id="brainApiKeyInput" type="password" placeholder="X-API-Key" />
       </label>
+
       <label>
         Endpoint
         <select id="brainEndpointSelect">
@@ -372,14 +501,24 @@
           <option value="/chat2">/chat2</option>
         </select>
       </label>
+
+      <label>
+        Default Spotify device
+        <select id="defaultSpotifyDeviceSelect">
+          <option value="bedroom">bedroom</option>
+          <option value="oppo">oppo</option>
+          <option value="main">main</option>
+        </select>
+      </label>
     </div>
+
     <div class="modal-foot">
       <button type="button" id="saveConfigBtn" class="primary">Save</button>
     </div>
   </dialog>
 
   <script>
-    const MYTALK_STORAGE_KEY = "mytalk_state_v1";
+    const MYTALK_STORAGE_KEY = "mytalk_state_v121";
     const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
     const defaultState = {
@@ -387,7 +526,12 @@
         url: "",
         apiKey: "",
         endpoint: "/chat",
-        lastStatus: "offline"
+        lastStatus: "offline",
+        defaultSpotifyDevice: "bedroom"
+      },
+      ui: {
+        debug: false,
+        lastActionSummary: "none"
       },
       aiChat: {
         messages: []
@@ -407,12 +551,18 @@
       testBrainBtn: document.getElementById("testBrainBtn"),
       brainInlineStatus: document.getElementById("brainInlineStatus"),
       brainEndpointLabel: document.getElementById("brainEndpointLabel"),
+      defaultDevicePill: document.getElementById("defaultDevicePill"),
+      lastActionPill: document.getElementById("lastActionPill"),
+      debugToggle: document.getElementById("debugToggle"),
+      helperState: document.getElementById("helperState"),
       brainConfigDialog: document.getElementById("brainConfigDialog"),
       closeConfigBtn: document.getElementById("closeConfigBtn"),
       saveConfigBtn: document.getElementById("saveConfigBtn"),
       brainUrlInput: document.getElementById("brainUrlInput"),
       brainApiKeyInput: document.getElementById("brainApiKeyInput"),
-      brainEndpointSelect: document.getElementById("brainEndpointSelect")
+      brainEndpointSelect: document.getElementById("brainEndpointSelect"),
+      defaultSpotifyDeviceSelect: document.getElementById("defaultSpotifyDeviceSelect"),
+      quickChips: Array.from(document.querySelectorAll(".chip"))
     };
 
     init();
@@ -423,11 +573,12 @@
       syncConfigInputs();
       renderAIMessages();
       refreshBrainStatusUI();
+      refreshUIPills();
 
       if (!state.aiChat.messages.length) {
         aiPush(
           "system",
-          "MyTalk v1.1.2 ready. Default endpoint is /chat. Try: play spotify playlist gym on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes."
+          "MyTalk v1.2.1 ready. Try: play spotify on bedroom, play spotify playlist gym on bedroom, shopping add: milk, or lesson plan grade 4 animals 80 minutes."
         );
       }
     }
@@ -436,11 +587,11 @@
       els.aiSendBtn.addEventListener("click", () => aiSendMessage());
 
       els.attachBtn.addEventListener("click", () => {
-        aiPush("system", "Attach is ready in the UI. Image/file capability will be enabled when Brain supports it.");
+        aiPush("system", "Attach is visible in the UI. File/image action flow can be connected later.");
       });
 
       els.micBtn.addEventListener("click", () => {
-        aiPush("system", "Microphone will be added in the next version. For now, type your message here.");
+        aiPush("system", "Microphone placeholder ready. Voice input can be added later without changing the Brain contract.");
       });
 
       els.aiInput.addEventListener("keydown", (e) => {
@@ -460,6 +611,20 @@
       els.closeConfigBtn.addEventListener("click", () => els.brainConfigDialog.close());
       els.saveConfigBtn.addEventListener("click", saveBrainConfig);
       els.testBrainBtn.addEventListener("click", testBrainConnection);
+
+      els.debugToggle.addEventListener("change", () => {
+        state.ui.debug = !!els.debugToggle.checked;
+        saveState();
+        renderAIMessages();
+      });
+
+      els.quickChips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const text = chip.dataset.fill || "";
+          els.aiInput.value = text;
+          els.aiInput.focus();
+        });
+      });
     }
 
     function loadState() {
@@ -513,20 +678,22 @@
       els.brainUrlInput.value = state.brain.url || "";
       els.brainApiKeyInput.value = state.brain.apiKey || "";
       els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
-      els.brainEndpointLabel.textContent = state.brain.url
-        ? `${state.brain.url}${state.brain.endpoint}`
-        : "No Brain URL saved";
+      els.defaultSpotifyDeviceSelect.value = state.brain.defaultSpotifyDevice || "bedroom";
+      els.debugToggle.checked = !!state.ui.debug;
     }
 
     function saveBrainConfig() {
       state.brain.url = normalizeBaseUrl(els.brainUrlInput.value);
       state.brain.apiKey = els.brainApiKeyInput.value.trim();
       state.brain.endpoint = els.brainEndpointSelect.value || "/chat";
+      state.brain.defaultSpotifyDevice = els.defaultSpotifyDeviceSelect.value || "bedroom";
+
       saveState();
       syncConfigInputs();
       refreshBrainStatusUI();
+      refreshUIPills();
       els.brainConfigDialog.close();
-      aiPush("system", `Brain connection settings saved. Endpoint: ${state.brain.endpoint}`);
+      aiPush("system", `Brain settings saved. Endpoint: ${state.brain.endpoint}. Default device: ${state.brain.defaultSpotifyDevice}.`);
     }
 
     function normalizeBaseUrl(url) {
@@ -544,6 +711,7 @@
       pruneChatHistory();
       saveState();
       renderAIMessages();
+      refreshUIPills();
     }
 
     function renderAIMessages() {
@@ -574,6 +742,19 @@
           bubble.appendChild(actionsBox);
         }
 
+        if (state.ui.debug && msg.role === "brain") {
+          const debugBox = document.createElement("div");
+          debugBox.className = "debug-box";
+          const metaPretty = safeJson(msg.meta || {});
+          const actionsPretty = safeJson(msg.actions || []);
+          debugBox.innerHTML =
+            `<div><strong>Debug</strong></div>` +
+            `<div class="mono">endpoint: ${escapeHtml(state.brain.endpoint || "/chat")}</div>` +
+            `<div class="mono">meta: ${escapeHtml(metaPretty)}</div>` +
+            `<div class="mono">actions: ${escapeHtml(actionsPretty)}</div>`;
+          bubble.appendChild(debugBox);
+        }
+
         els.aiMessages.appendChild(bubble);
       }
 
@@ -593,31 +774,58 @@
 
       if (lowerType.includes("spotify")) {
         card.classList.add("spotify");
-        title.textContent = "🎵 Spotify Action";
+        title.textContent = "🎵 Spotify";
         card.appendChild(title);
 
-        appendActionLine(card, `type: ${type}`);
-        if (payload.action) appendActionLine(card, `action: ${payload.action}`);
-        if (payload.device) appendActionLine(card, `device: ${payload.device}`);
-        if (payload.target_device) appendActionLine(card, `target: ${payload.target_device}`);
+        appendActionLine(card, `action: ${payload.action || "play"}`);
+        appendActionLine(card, `device: ${payload.target_device || payload.device || state.brain.defaultSpotifyDevice}`);
+        if (payload.playlist) appendActionLine(card, `playlist: ${payload.playlist}`);
         if (payload.song) appendActionLine(card, `song: ${payload.song}`);
         if (payload.artist) appendActionLine(card, `artist: ${payload.artist}`);
-        if (payload.playlist) appendActionLine(card, `playlist: ${payload.playlist}`);
         if (payload.album) appendActionLine(card, `album: ${payload.album}`);
-        if (payload.query) appendActionLine(card, `query: ${payload.query}`);
+        if (!payload.playlist && !payload.song && !payload.artist && !payload.album) {
+          appendActionLine(card, "content: spotify default play");
+        }
+        appendActionLine(card, "status: sent");
         return card;
       }
 
-      if (lowerType.includes("lesson") || lowerType.includes("plan")) {
+      if (lowerType.includes("shopping")) {
+        card.classList.add("shopping");
+        title.textContent = "🛒 Shopping";
+        card.appendChild(title);
+
+        appendActionLine(card, `type: ${type}`);
+        if (payload.item) appendActionLine(card, `item: ${payload.item}`);
+        if (payload.list_name) appendActionLine(card, `list: ${payload.list_name}`);
+        if (payload.name) appendActionLine(card, `name: ${payload.name}`);
+        appendActionLine(card, "status: sent");
+        return card;
+      }
+
+      if (lowerType.includes("lesson")) {
         card.classList.add("lesson");
-        title.textContent = "📚 Lesson Plan Action";
+        title.textContent = "📚 Lesson Plan";
         card.appendChild(title);
 
         appendActionLine(card, `type: ${type}`);
         if (payload.grade) appendActionLine(card, `grade: ${payload.grade}`);
+        if (payload.level) appendActionLine(card, `level: ${payload.level}`);
         if (payload.topic) appendActionLine(card, `topic: ${payload.topic}`);
-        if (payload.duration) appendActionLine(card, `duration: ${payload.duration}`);
-        if (payload.query) appendActionLine(card, `query: ${payload.query}`);
+        if (payload.duration || payload.duration_min) appendActionLine(card, `duration: ${payload.duration || payload.duration_min}`);
+        appendActionLine(card, "status: generated");
+        return card;
+      }
+
+      if (lowerType.includes("task")) {
+        card.classList.add("task");
+        title.textContent = "✅ Task";
+        card.appendChild(title);
+
+        appendActionLine(card, `type: ${type}`);
+        if (payload.text) appendActionLine(card, `text: ${payload.text}`);
+        if (payload.id) appendActionLine(card, `id: ${payload.id}`);
+        appendActionLine(card, "status: sent");
         return card;
       }
 
@@ -663,7 +871,7 @@
     }
 
     async function aiSendMessage(forceText = "") {
-      const message = (forceText || els.aiInput.value || "").trim();
+      let message = (forceText || els.aiInput.value || "").trim();
       if (!message) return;
 
       if (!state.brain.url) {
@@ -672,29 +880,87 @@
         return;
       }
 
+      message = maybeApplyDefaultDevice(message);
+
       aiPush("user", message);
       els.aiInput.value = "";
       setComposerBusy(true);
+      showTyping();
 
       try {
+        const startedAt = performance.now();
         const data = await brainChat(message);
+        const latencyMs = Math.round(performance.now() - startedAt);
+
+        hideTyping();
+
         const reply = data?.reply || data?.message || "No reply returned.";
         const actions = Array.isArray(data?.actions) ? data.actions : [];
+        const meta = {
+          ...(data?.meta || {}),
+          latency_ms: latencyMs
+        };
+
         aiPush("brain", reply, {
           actions,
-          meta: data?.meta || {},
+          meta,
           ok: data?.ok
         });
-        applyBrainActions(actions);
+
+        updateLastActionSummary(actions);
         state.brain.lastStatus = "online";
+
+        if (!data?.ok) {
+          aiPush("system", data?.meta?.error || data?.meta?.detail || "Brain returned ok=false.");
+        }
       } catch (err) {
+        hideTyping();
         aiPush("system", classifyBrainError(err));
         state.brain.lastStatus = "offline";
       } finally {
         saveState();
         refreshBrainStatusUI();
+        refreshUIPills();
         setComposerBusy(false);
       }
+    }
+
+    function maybeApplyDefaultDevice(message) {
+      const low = message.toLowerCase();
+      const device = state.brain.defaultSpotifyDevice || "bedroom";
+
+      const spotifyLike =
+        low.startsWith("play spotify") ||
+        low.startsWith("pause spotify") ||
+        low.startsWith("resume spotify") ||
+        low.startsWith("stop spotify") ||
+        low.startsWith("next") ||
+        low.startsWith("previous");
+
+      if (!spotifyLike) return message;
+      if (/\bon\s+(bedroom|oppo|main)\b/i.test(message)) return message;
+
+      if (low.startsWith("pause spotify")) return `${message} on ${device}`;
+      if (low.startsWith("resume spotify")) return `${message} on ${device}`;
+      if (low.startsWith("stop spotify")) return `${message} on ${device}`;
+      if (low.startsWith("next")) return `${message} on ${device}`;
+      if (low.startsWith("previous")) return `${message} on ${device}`;
+
+      return `${message} on ${device}`;
+    }
+
+    function showTyping() {
+      const el = document.createElement("div");
+      el.className = "typing";
+      el.id = "typingIndicator";
+      el.textContent = "Brain is thinking...";
+      els.aiMessages.appendChild(el);
+      els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+    }
+
+    function hideTyping() {
+      const typing = document.getElementById("typingIndicator");
+      if (typing) typing.remove();
     }
 
     function setComposerBusy(isBusy) {
@@ -703,6 +969,7 @@
       els.aiInput.disabled = isBusy;
       els.attachBtn.disabled = isBusy;
       els.micBtn.disabled = isBusy;
+      els.helperState.textContent = isBusy ? "Sending to Brain..." : "Ready";
     }
 
     async function brainChat(message) {
@@ -744,21 +1011,43 @@
       return `Brain error: ${raw}`;
     }
 
-    function applyBrainActions(actions) {
-      if (!Array.isArray(actions) || !actions.length) return;
-      console.log("[MyTalk] Brain actions received:", actions);
-
-      const hasSpotify = actions.some(a => String(a?.type || "").toLowerCase().includes("spotify"));
-      const hasLessonPlan = actions.some(a => {
-        const t = String(a?.type || "").toLowerCase();
-        return t.includes("lesson") || t.includes("plan");
-      });
-
-      if (hasSpotify) {
-        aiPush("system", "Spotify action detected. Review the action card above.");
-      } else if (hasLessonPlan) {
-        aiPush("system", "Lesson plan action detected. Review the action card above.");
+    function updateLastActionSummary(actions) {
+      if (!Array.isArray(actions) || !actions.length) {
+        state.ui.lastActionSummary = "none";
+        return;
       }
+
+      const first = actions[0];
+      const type = String(first?.type || "unknown");
+      const payload = first?.payload || {};
+
+      if (type === "spotify_control") {
+        const target = payload.target_device || payload.device || state.brain.defaultSpotifyDevice;
+        const what = payload.playlist || payload.song || payload.artist || payload.album || payload.action || "spotify";
+        state.ui.lastActionSummary = `spotify → ${target} → ${what}`;
+      } else if (payload.item) {
+        state.ui.lastActionSummary = `${type} → ${payload.item}`;
+      } else if (payload.text) {
+        state.ui.lastActionSummary = `${type} → ${payload.text}`;
+      } else {
+        state.ui.lastActionSummary = type;
+      }
+    }
+
+    function refreshBrainStatusUI() {
+      const online = state.brain.lastStatus === "online";
+      els.brainInlineStatus.textContent = online ? "🟢 Connected" : "🔴 Offline";
+      els.brainInlineStatus.style.borderColor = online ? "rgba(47,191,113,0.45)" : "rgba(224,93,93,0.45)";
+      els.brainInlineStatus.style.color = online ? "#b8f0cc" : "#ffb3b3";
+
+      els.brainEndpointLabel.textContent = state.brain.url
+        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
+        : "No Brain URL saved";
+    }
+
+    function refreshUIPills() {
+      els.defaultDevicePill.textContent = `Default Spotify device: ${state.brain.defaultSpotifyDevice || "bedroom"}`;
+      els.lastActionPill.textContent = `Last action: ${state.ui.lastActionSummary || "none"}`;
     }
 
     async function testBrainConnection() {
@@ -784,16 +1073,21 @@
       }
     }
 
-    function refreshBrainStatusUI() {
-      const online = state.brain.lastStatus === "online";
-      if (els.brainInlineStatus) {
-        els.brainInlineStatus.textContent = online ? "🟢 Connected" : "🔴 Offline";
-        els.brainInlineStatus.style.borderColor = online ? "rgba(47,191,113,0.45)" : "rgba(224,93,93,0.45)";
-        els.brainInlineStatus.style.color = online ? "#b8f0cc" : "#ffb3b3";
+    function safeJson(value) {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return "[unserializable]";
       }
-      els.brainEndpointLabel.textContent = state.brain.url
-        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
-        : "No Brain URL saved";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     if ("serviceWorker" in navigator) {
