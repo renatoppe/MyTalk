@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.1.0</title>
+  <title>MyTalk v1.1.1</title>
 
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#10131a">
@@ -24,6 +24,9 @@
       --brain: #1c2a22;
       --system: #2d2415;
       --system-text: #f3d088;
+      --ok: #2fbf71;
+      --bad: #e05d5d;
+      --card: rgba(255,255,255,0.04);
     }
 
     * { box-sizing: border-box; }
@@ -175,13 +178,29 @@
     }
 
     .actions-box {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.04);
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .action-card {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--card);
       border: 1px dashed var(--border);
       font-size: 12px;
       color: var(--muted);
+    }
+
+    .action-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .action-line {
+      margin-top: 2px;
     }
 
     .composer {
@@ -290,7 +309,7 @@
           <h1>MyTalk v1</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.1.0</p>
+        <p>Standalone Brain chat client • v1.1.1</p>
       </div>
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
@@ -337,8 +356,8 @@
       <label>
         Endpoint
         <select id="brainEndpointSelect">
-          <option value="/chat">/chat</option>
           <option value="/chat2">/chat2</option>
+          <option value="/chat">/chat</option>
         </select>
       </label>
     </div>
@@ -355,7 +374,7 @@
       brain: {
         url: "",
         apiKey: "",
-        endpoint: "/chat",
+        endpoint: "/chat2",
         lastStatus: "offline"
       },
       aiChat: {
@@ -394,7 +413,10 @@
       refreshBrainStatusUI();
 
       if (!state.aiChat.messages.length) {
-        aiPush("system", "MyTalk v1.1.0 ready. Try commands like: play spotify on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes.");
+        aiPush(
+          "system",
+          "MyTalk v1.1.1 ready. Default endpoint is /chat2. Try: play spotify on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes."
+        );
       }
     }
 
@@ -478,7 +500,7 @@
     function syncConfigInputs() {
       els.brainUrlInput.value = state.brain.url || "";
       els.brainApiKeyInput.value = state.brain.apiKey || "";
-      els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
+      els.brainEndpointSelect.value = state.brain.endpoint || "/chat2";
       els.brainEndpointLabel.textContent = state.brain.url
         ? `${state.brain.url}${state.brain.endpoint}`
         : "No Brain URL saved";
@@ -487,7 +509,7 @@
     function saveBrainConfig() {
       state.brain.url = normalizeBaseUrl(els.brainUrlInput.value);
       state.brain.apiKey = els.brainApiKeyInput.value.trim();
-      state.brain.endpoint = els.brainEndpointSelect.value;
+      state.brain.endpoint = els.brainEndpointSelect.value || "/chat2";
       saveState();
       syncConfigInputs();
       refreshBrainStatusUI();
@@ -531,7 +553,11 @@
         if (msg.actions && msg.actions.length) {
           const actionsBox = document.createElement("div");
           actionsBox.className = "actions-box";
-          actionsBox.innerHTML = msg.actions.map(formatActionLine).join("<br>");
+
+          for (const action of msg.actions) {
+            actionsBox.appendChild(renderActionCard(action));
+          }
+
           bubble.appendChild(actionsBox);
         }
 
@@ -541,23 +567,74 @@
       els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
     }
 
-    function formatActionLine(action) {
-      const type = action?.type || "unknown";
+    function renderActionCard(action) {
+      const card = document.createElement("div");
+      card.className = "action-card";
+
+      const title = document.createElement("div");
+      title.className = "action-title";
+
+      const type = String(action?.type || "unknown");
       const payload = action?.payload || {};
-      const bits = [type];
 
-      if (payload.device) bits.push(`device=${payload.device}`);
-      if (payload.target_device) bits.push(`target=${payload.target_device}`);
-      if (payload.song) bits.push(`song=${payload.song}`);
-      if (payload.artist) bits.push(`artist=${payload.artist}`);
-      if (payload.playlist) bits.push(`playlist=${payload.playlist}`);
-      if (payload.album) bits.push(`album=${payload.album}`);
-      if (payload.query) bits.push(`query=${payload.query}`);
-      if (payload.topic) bits.push(`topic=${payload.topic}`);
-      if (payload.grade) bits.push(`grade=${payload.grade}`);
-      if (payload.duration) bits.push(`duration=${payload.duration}`);
+      if (type.toLowerCase().includes("spotify")) {
+        title.textContent = "🎵 Spotify Action";
+        card.appendChild(title);
 
-      return `⚡ ${bits.join(" • ")}`;
+        appendActionLine(card, `type: ${type}`);
+        if (payload.device) appendActionLine(card, `device: ${payload.device}`);
+        if (payload.target_device) appendActionLine(card, `target: ${payload.target_device}`);
+        if (payload.song) appendActionLine(card, `song: ${payload.song}`);
+        if (payload.artist) appendActionLine(card, `artist: ${payload.artist}`);
+        if (payload.playlist) appendActionLine(card, `playlist: ${payload.playlist}`);
+        if (payload.album) appendActionLine(card, `album: ${payload.album}`);
+        if (payload.query) appendActionLine(card, `query: ${payload.query}`);
+        return card;
+      }
+
+      if (type.toLowerCase().includes("lesson") || type.toLowerCase().includes("plan")) {
+        title.textContent = "📚 Lesson Plan Action";
+        card.appendChild(title);
+
+        appendActionLine(card, `type: ${type}`);
+        if (payload.grade) appendActionLine(card, `grade: ${payload.grade}`);
+        if (payload.topic) appendActionLine(card, `topic: ${payload.topic}`);
+        if (payload.duration) appendActionLine(card, `duration: ${payload.duration}`);
+        if (payload.query) appendActionLine(card, `query: ${payload.query}`);
+        return card;
+      }
+
+      title.textContent = "⚡ Brain Action";
+      card.appendChild(title);
+      appendActionLine(card, `type: ${type}`);
+
+      const keys = Object.keys(payload);
+      if (!keys.length) {
+        appendActionLine(card, "payload: empty");
+        return card;
+      }
+
+      for (const key of keys) {
+        appendActionLine(card, `${key}: ${stringifyValue(payload[key])}`);
+      }
+
+      return card;
+    }
+
+    function appendActionLine(card, text) {
+      const line = document.createElement("div");
+      line.className = "action-line";
+      line.textContent = text;
+      card.appendChild(line);
+    }
+
+    function stringifyValue(value) {
+      if (value == null) return "null";
+      if (typeof value === "object") {
+        try { return JSON.stringify(value); }
+        catch { return "[object]"; }
+      }
+      return String(value);
     }
 
     function formatTime(iso) {
@@ -608,7 +685,7 @@
     }
 
     async function brainChat(message) {
-      const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
+      const url = `${state.brain.url}${state.brain.endpoint || "/chat2"}`;
       const headers = { "Content-Type": "application/json" };
       if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
 
@@ -657,9 +734,9 @@
       });
 
       if (hasSpotify) {
-        aiPush("system", "Spotify action detected. Check the reply and action details above for device and track info.");
+        aiPush("system", "Spotify action detected. Review the action card above.");
       } else if (hasLessonPlan) {
-        aiPush("system", "Lesson plan action detected. Review the Brain reply and action details above.");
+        aiPush("system", "Lesson plan action detected. Review the action card above.");
       }
     }
 
@@ -694,7 +771,7 @@
         els.brainInlineStatus.style.color = online ? "#b8f0cc" : "#ffb3b3";
       }
       els.brainEndpointLabel.textContent = state.brain.url
-        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
+        ? `${state.brain.url}${state.brain.endpoint || "/chat2"}`
         : "No Brain URL saved";
     }
 
