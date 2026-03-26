@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1</title>
+  <title>MyTalk v1.1.0</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#10131a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MyTalk">
+
   <style>
     :root {
       --bg: #0f1115;
@@ -12,15 +19,16 @@
       --text: #e8ecf1;
       --muted: #97a3b6;
       --accent: #58a6ff;
-      --ok: #2fbf71;
-      --bad: #e05d5d;
       --border: #2a3140;
       --user: #21314d;
       --brain: #1c2a22;
+      --system: #2d2415;
+      --system-text: #f3d088;
     }
 
     * { box-sizing: border-box; }
     html, body { height: 100%; }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -51,11 +59,19 @@
       top: 0;
       backdrop-filter: blur(8px);
       z-index: 10;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .titlewrap h1 {
       margin: 0;
       font-size: 20px;
+    }
+
+    .titlewrap p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .title-row {
@@ -78,12 +94,6 @@
       line-height: 1;
     }
 
-    .titlewrap p {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
     .top-actions {
       display: flex;
       gap: 8px;
@@ -101,7 +111,14 @@
     }
 
     button:hover { border-color: var(--accent); }
-    button.primary { background: var(--accent); color: #08111f; border-color: transparent; font-weight: 700; }
+    button:disabled { opacity: 0.6; cursor: default; }
+
+    button.primary {
+      background: var(--accent);
+      color: #08111f;
+      border-color: transparent;
+      font-weight: 700;
+    }
 
     .statusbar {
       padding: 10px 16px;
@@ -113,16 +130,6 @@
       font-size: 13px;
       background: var(--panel);
       flex-wrap: wrap;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
     }
 
     .messages {
@@ -156,8 +163,8 @@
 
     .bubble.system {
       align-self: center;
-      background: #2d2415;
-      color: #f3d088;
+      background: var(--system);
+      color: var(--system-text);
       max-width: 92%;
     }
 
@@ -283,7 +290,7 @@
           <h1>MyTalk v1</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.0.5</p>
+        <p>Standalone Brain chat client • v1.1.0</p>
       </div>
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
@@ -330,8 +337,8 @@
       <label>
         Endpoint
         <select id="brainEndpointSelect">
-          <option value="/chat2">/chat2</option>
           <option value="/chat">/chat</option>
+          <option value="/chat2">/chat2</option>
         </select>
       </label>
     </div>
@@ -342,12 +349,13 @@
 
   <script>
     const MYTALK_STORAGE_KEY = "mytalk_state_v1";
+    const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
     const defaultState = {
       brain: {
         url: "",
         apiKey: "",
-        endpoint: "/chat2",
+        endpoint: "/chat",
         lastStatus: "offline"
       },
       aiChat: {
@@ -386,18 +394,21 @@
       refreshBrainStatusUI();
 
       if (!state.aiChat.messages.length) {
-        aiPush("system", "MyTalk v1.0.5 ready. Try commands like: play spotify on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes.");
+        aiPush("system", "MyTalk v1.1.0 ready. Try commands like: play spotify on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes.");
       }
     }
 
     function bindEvents() {
       els.aiSendBtn.addEventListener("click", () => aiSendMessage());
+
       els.attachBtn.addEventListener("click", () => {
         aiPush("system", "Attach is ready in the UI. Image/file capability will be enabled when Brain supports it.");
       });
+
       els.micBtn.addEventListener("click", () => {
         aiPush("system", "Microphone will be added in the next version. For now, type your message here.");
       });
+
       els.aiInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
@@ -420,10 +431,10 @@
     function loadState() {
       try {
         const raw = localStorage.getItem(MYTALK_STORAGE_KEY);
-        if (!raw) return structuredClone(defaultState);
-        return deepMerge(structuredClone(defaultState), JSON.parse(raw));
+        if (!raw) return clone(defaultState);
+        return deepMerge(clone(defaultState), JSON.parse(raw));
       } catch {
-        return structuredClone(defaultState);
+        return clone(defaultState);
       }
     }
 
@@ -431,22 +442,43 @@
       localStorage.setItem(MYTALK_STORAGE_KEY, JSON.stringify(state));
     }
 
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
     function deepMerge(base, extra) {
       if (!extra || typeof extra !== "object") return base;
+
       for (const [key, value] of Object.entries(extra)) {
-        if (value && typeof value === "object" && !Array.isArray(value) && base[key] && typeof base[key] === "object" && !Array.isArray(base[key])) {
+        if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          base[key] &&
+          typeof base[key] === "object" &&
+          !Array.isArray(base[key])
+        ) {
           base[key] = deepMerge(base[key], value);
         } else {
           base[key] = value;
         }
       }
+
       return base;
+    }
+
+    function pruneChatHistory() {
+      const cutoff = Date.now() - HISTORY_WINDOW_MS;
+      state.aiChat.messages = (state.aiChat.messages || []).filter((msg) => {
+        const ts = new Date(msg.ts || 0).getTime();
+        return Number.isFinite(ts) && ts >= cutoff;
+      });
     }
 
     function syncConfigInputs() {
       els.brainUrlInput.value = state.brain.url || "";
       els.brainApiKeyInput.value = state.brain.apiKey || "";
-      els.brainEndpointSelect.value = state.brain.endpoint || "/chat2";
+      els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
       els.brainEndpointLabel.textContent = state.brain.url
         ? `${state.brain.url}${state.brain.endpoint}`
         : "No Brain URL saved";
@@ -460,7 +492,7 @@
       syncConfigInputs();
       refreshBrainStatusUI();
       els.brainConfigDialog.close();
-      aiPush("system", "Brain connection settings saved.");
+      aiPush("system", `Brain connection settings saved. Endpoint: ${state.brain.endpoint}`);
     }
 
     function normalizeBaseUrl(url) {
@@ -478,14 +510,6 @@
       pruneChatHistory();
       saveState();
       renderAIMessages();
-    }
-
-    function pruneChatHistory() {
-      const cutoff = Date.now() - (24 * 60 * 60 * 1000);
-      state.aiChat.messages = (state.aiChat.messages || []).filter(msg => {
-        const ts = new Date(msg.ts || 0).getTime();
-        return Number.isFinite(ts) && ts >= cutoff;
-      });
     }
 
     function renderAIMessages() {
@@ -521,6 +545,7 @@
       const type = action?.type || "unknown";
       const payload = action?.payload || {};
       const bits = [type];
+
       if (payload.device) bits.push(`device=${payload.device}`);
       if (payload.target_device) bits.push(`target=${payload.target_device}`);
       if (payload.song) bits.push(`song=${payload.song}`);
@@ -531,12 +556,13 @@
       if (payload.topic) bits.push(`topic=${payload.topic}`);
       if (payload.grade) bits.push(`grade=${payload.grade}`);
       if (payload.duration) bits.push(`duration=${payload.duration}`);
+
       return `⚡ ${bits.join(" • ")}`;
     }
 
     function formatTime(iso) {
       try {
-        return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       } catch {
         return "--:--";
       }
@@ -564,8 +590,7 @@
         applyBrainActions(actions);
         state.brain.lastStatus = "online";
       } catch (err) {
-        const msg = classifyBrainError(err);
-        aiPush("system", msg);
+        aiPush("system", classifyBrainError(err));
         state.brain.lastStatus = "offline";
       } finally {
         saveState();
@@ -583,15 +608,19 @@
     }
 
     async function brainChat(message) {
-      const url = `${state.brain.url}${state.brain.endpoint || "/chat2"}`;
+      const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
       const headers = { "Content-Type": "application/json" };
       if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
 
-      const response = await fetchWithTimeout(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ message, scope: "global" })
-      }, 20000);
+      const response = await fetchWithTimeout(
+        url,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ message, scope: "global" })
+        },
+        20000
+      );
 
       if (!response.ok) {
         const text = await response.text().catch(() => "");
@@ -604,6 +633,7 @@
     function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
+
       return fetch(url, { ...options, signal: controller.signal })
         .finally(() => clearTimeout(timer));
     }
@@ -641,6 +671,7 @@
       }
 
       const healthUrl = `${state.brain.url}/health`;
+
       try {
         const res = await fetchWithTimeout(healthUrl, { method: "GET" }, 8000);
         if (!res.ok) throw new Error(`Health HTTP ${res.status}`);
@@ -663,8 +694,16 @@
         els.brainInlineStatus.style.color = online ? "#b8f0cc" : "#ffb3b3";
       }
       els.brainEndpointLabel.textContent = state.brain.url
-        ? `${state.brain.url}${state.brain.endpoint || "/chat2"}`
+        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
         : "No Brain URL saved";
+    }
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch((err) => console.error("Service Worker failed:", err));
+      });
     }
   </script>
 </body>
