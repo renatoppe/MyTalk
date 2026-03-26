@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.1.1</title>
+  <title>MyTalk v1.1.2</title>
 
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#10131a">
@@ -27,6 +27,8 @@
       --ok: #2fbf71;
       --bad: #e05d5d;
       --card: rgba(255,255,255,0.04);
+      --spotify: #1db954;
+      --lesson: #ffcc66;
     }
 
     * { box-sizing: border-box; }
@@ -192,6 +194,16 @@
       color: var(--muted);
     }
 
+    .action-card.spotify {
+      border-color: rgba(29,185,84,0.35);
+      background: rgba(29,185,84,0.08);
+    }
+
+    .action-card.lesson {
+      border-color: rgba(255,204,102,0.35);
+      background: rgba(255,204,102,0.08);
+    }
+
     .action-title {
       font-size: 13px;
       font-weight: 700;
@@ -309,7 +321,7 @@
           <h1>MyTalk v1</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.1.1</p>
+        <p>Standalone Brain chat client • v1.1.2</p>
       </div>
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
@@ -356,8 +368,8 @@
       <label>
         Endpoint
         <select id="brainEndpointSelect">
-          <option value="/chat2">/chat2</option>
           <option value="/chat">/chat</option>
+          <option value="/chat2">/chat2</option>
         </select>
       </label>
     </div>
@@ -374,7 +386,7 @@
       brain: {
         url: "",
         apiKey: "",
-        endpoint: "/chat2",
+        endpoint: "/chat",
         lastStatus: "offline"
       },
       aiChat: {
@@ -415,7 +427,7 @@
       if (!state.aiChat.messages.length) {
         aiPush(
           "system",
-          "MyTalk v1.1.1 ready. Default endpoint is /chat2. Try: play spotify on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes."
+          "MyTalk v1.1.2 ready. Default endpoint is /chat. Try: play spotify playlist gym on oppo, play Queen on bedroom, or create lesson plan grade 4 animals 80 minutes."
         );
       }
     }
@@ -500,7 +512,7 @@
     function syncConfigInputs() {
       els.brainUrlInput.value = state.brain.url || "";
       els.brainApiKeyInput.value = state.brain.apiKey || "";
-      els.brainEndpointSelect.value = state.brain.endpoint || "/chat2";
+      els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
       els.brainEndpointLabel.textContent = state.brain.url
         ? `${state.brain.url}${state.brain.endpoint}`
         : "No Brain URL saved";
@@ -509,7 +521,7 @@
     function saveBrainConfig() {
       state.brain.url = normalizeBaseUrl(els.brainUrlInput.value);
       state.brain.apiKey = els.brainApiKeyInput.value.trim();
-      state.brain.endpoint = els.brainEndpointSelect.value || "/chat2";
+      state.brain.endpoint = els.brainEndpointSelect.value || "/chat";
       saveState();
       syncConfigInputs();
       refreshBrainStatusUI();
@@ -547,6 +559,7 @@
         const bits = [`${msg.role.toUpperCase()} • ${formatTime(msg.ts)}`];
         if (msg.meta?.latency_ms) bits.push(`${msg.meta.latency_ms}ms`);
         if (msg.meta?.schema_version) bits.push(`schema ${msg.meta.schema_version}`);
+        if (typeof msg.ok === "boolean") bits.push(`ok=${msg.ok}`);
         meta.textContent = bits.join(" • ");
         bubble.appendChild(meta);
 
@@ -576,12 +589,15 @@
 
       const type = String(action?.type || "unknown");
       const payload = action?.payload || {};
+      const lowerType = type.toLowerCase();
 
-      if (type.toLowerCase().includes("spotify")) {
+      if (lowerType.includes("spotify")) {
+        card.classList.add("spotify");
         title.textContent = "🎵 Spotify Action";
         card.appendChild(title);
 
         appendActionLine(card, `type: ${type}`);
+        if (payload.action) appendActionLine(card, `action: ${payload.action}`);
         if (payload.device) appendActionLine(card, `device: ${payload.device}`);
         if (payload.target_device) appendActionLine(card, `target: ${payload.target_device}`);
         if (payload.song) appendActionLine(card, `song: ${payload.song}`);
@@ -592,7 +608,8 @@
         return card;
       }
 
-      if (type.toLowerCase().includes("lesson") || type.toLowerCase().includes("plan")) {
+      if (lowerType.includes("lesson") || lowerType.includes("plan")) {
+        card.classList.add("lesson");
         title.textContent = "📚 Lesson Plan Action";
         card.appendChild(title);
 
@@ -663,7 +680,11 @@
         const data = await brainChat(message);
         const reply = data?.reply || data?.message || "No reply returned.";
         const actions = Array.isArray(data?.actions) ? data.actions : [];
-        aiPush("brain", reply, { actions, meta: data?.meta || {} });
+        aiPush("brain", reply, {
+          actions,
+          meta: data?.meta || {},
+          ok: data?.ok
+        });
         applyBrainActions(actions);
         state.brain.lastStatus = "online";
       } catch (err) {
@@ -685,7 +706,7 @@
     }
 
     async function brainChat(message) {
-      const url = `${state.brain.url}${state.brain.endpoint || "/chat2"}`;
+      const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
       const headers = { "Content-Type": "application/json" };
       if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
 
@@ -771,7 +792,7 @@
         els.brainInlineStatus.style.color = online ? "#b8f0cc" : "#ffb3b3";
       }
       els.brainEndpointLabel.textContent = state.brain.url
-        ? `${state.brain.url}${state.brain.endpoint || "/chat2"}`
+        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
         : "No Brain URL saved";
     }
 
