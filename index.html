@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.2.2</title>
+  <title>MyTalk v1.2.1</title>
 
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10131a" />
@@ -16,6 +16,7 @@
       --bg: #0f1115;
       --panel: #171a21;
       --panel-2: #1f2430;
+      --panel-3: #11151d;
       --text: #e8ecf1;
       --muted: #97a3b6;
       --accent: #58a6ff;
@@ -32,6 +33,7 @@
       --shopping: #ffa657;
       --lesson: #8b5cf6;
       --task: #f97316;
+      --generic: #7c8aa5;
       --card: rgba(255,255,255,0.04);
       --shadow: 0 8px 24px rgba(0,0,0,0.22);
     }
@@ -51,7 +53,7 @@
 
     .app {
       width: 100%;
-      max-width: 960px;
+      max-width: 920px;
       min-height: 100vh;
       display: grid;
       grid-template-rows: auto auto auto 1fr auto;
@@ -68,7 +70,7 @@
       background: rgba(23, 26, 33, 0.94);
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 20;
       backdrop-filter: blur(10px);
       flex-wrap: wrap;
     }
@@ -161,36 +163,23 @@
       font-size: 13px;
     }
 
-    .toggle-pill {
-      cursor: pointer;
-      user-select: none;
-    }
-
     .quickbar {
-      background: rgba(19, 23, 31, 0.95);
+      background: rgba(19, 23, 31, 0.92);
       position: sticky;
-      top: 69px;
-      z-index: 25;
-      align-items: flex-start;
-    }
-
-    .quick-section {
-      display: grid;
-      gap: 8px;
-      width: 100%;
-    }
-
-    .quick-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
+      top: 68px;
+      z-index: 15;
     }
 
     .quick-label {
       color: var(--muted);
       font-size: 12px;
-      min-width: 96px;
+      margin-right: 2px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .chip {
@@ -319,7 +308,7 @@
       padding: 14px 16px 18px;
       position: sticky;
       bottom: 0;
-      z-index: 30;
+      z-index: 20;
     }
 
     .composer-inner {
@@ -363,7 +352,7 @@
       background: var(--panel);
       color: var(--text);
       border-radius: 18px;
-      width: min(620px, calc(100vw - 24px));
+      width: min(600px, calc(100vw - 24px));
       padding: 0;
     }
 
@@ -418,8 +407,7 @@
       .composer-inner { grid-template-columns: 1fr; }
       .composer-actions { grid-template-columns: 1fr 1fr 1fr; min-width: 0; }
       .bubble { max-width: 100%; }
-      .quickbar { top: 75px; }
-      .quick-label { min-width: auto; }
+      .quickbar { top: 74px; }
     }
   </style>
 </head>
@@ -431,7 +419,7 @@
           <h1>MyTalk</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.2.2</p>
+        <p>Standalone Brain chat client • v1.2.1</p>
       </div>
 
       <div class="top-actions">
@@ -447,44 +435,25 @@
         <div class="pill" id="defaultDevicePill">Default Spotify device: bedroom</div>
       </div>
       <div class="subbar-right">
-        <label class="pill toggle-pill">
+        <label class="pill">
           <input type="checkbox" id="debugToggle" />
           Debug
-        </label>
-        <label class="pill toggle-pill">
-          <input type="checkbox" id="speakToggle" />
-          Speak replies
         </label>
         <div class="pill" id="lastActionPill">Last action: none</div>
       </div>
     </div>
 
     <div class="quickbar">
-      <div class="quick-section">
-        <div class="quick-row">
-          <span class="quick-label">Spotify</span>
-          <button class="chip" data-send="play spotify on bedroom">Play bedroom</button>
-          <button class="chip" data-send="pause spotify on bedroom">Pause bedroom</button>
-          <button class="chip" data-send="play spotify playlist gym on bedroom">Gym</button>
-          <button class="chip" data-send="play spotify playlist sapuleco on bedroom">Sapuleco</button>
-          <button class="chip" data-send="play spotify song so easy by olivia on bedroom">Olivia - So Easy</button>
-          <button class="chip" id="repeatLastSpotifyBtn">Repeat last Spotify</button>
-        </div>
-
-        <div class="quick-row">
-          <span class="quick-label">Shopping</span>
-          <button class="chip" data-send="shopping add: milk">Add milk</button>
-          <button class="chip" data-send="shopping add: eggs">Add eggs</button>
-          <button class="chip" data-send="shopping add: bananas">Add bananas</button>
-          <button class="chip" data-send="shopping show">Show shopping</button>
-        </div>
-
-        <div class="quick-row">
-          <span class="quick-label">Planning</span>
-          <button class="chip" data-send="lesson plan grade 4 animals 80 minutes">Lesson plan G4</button>
-          <button class="chip" data-send="lesson plan adults A1 travel conversation 60 minutes">Adults A1</button>
-          <button class="chip" data-send="list saved lesson plans">Saved plans</button>
-        </div>
+      <span class="quick-label">Quick actions</span>
+      <div class="chips">
+        <button class="chip" data-fill="play spotify on bedroom">Play bedroom</button>
+        <button class="chip" data-fill="pause spotify on bedroom">Pause bedroom</button>
+        <button class="chip" data-fill="play spotify playlist gym on bedroom">Gym playlist</button>
+        <button class="chip" data-fill="play spotify playlist sapuleco on bedroom">Sapuleco</button>
+        <button class="chip" data-fill="play spotify song so easy by olivia on bedroom">Olivia - So Easy</button>
+        <button class="chip" data-fill="shopping add: milk">Add milk</button>
+        <button class="chip" data-fill="shopping add: eggs">Add eggs</button>
+        <button class="chip" data-fill="lesson plan grade 4 animals 80 minutes">Lesson plan G4</button>
       </div>
     </div>
 
@@ -529,7 +498,6 @@
         Endpoint
         <select id="brainEndpointSelect">
           <option value="/chat">/chat</option>
-          <option value="/chat2">/chat2</option>
         </select>
       </label>
 
@@ -541,23 +509,6 @@
           <option value="main">main</option>
         </select>
       </label>
-
-      <label>
-        TTS voice
-        <select id="ttsVoiceSelect">
-          <option value="">System default</option>
-        </select>
-      </label>
-
-      <label>
-        TTS rate
-        <select id="ttsRateSelect">
-          <option value="0.9">0.9</option>
-          <option value="1" selected>1.0</option>
-          <option value="1.1">1.1</option>
-          <option value="1.2">1.2</option>
-        </select>
-      </label>
     </div>
 
     <div class="modal-foot">
@@ -566,7 +517,7 @@
   </dialog>
 
   <script>
-    const MYTALK_STORAGE_KEY = "mytalk_state_v122";
+    const MYTALK_STORAGE_KEY = "mytalk_state_v121";
     const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
     const defaultState = {
@@ -579,11 +530,7 @@
       },
       ui: {
         debug: false,
-        speakReplies: false,
-        lastActionSummary: "none",
-        lastSpotifyCommand: "",
-        ttsVoiceName: "",
-        ttsRate: "1"
+        lastActionSummary: "none"
       },
       aiChat: {
         messages: []
@@ -591,8 +538,6 @@
     };
 
     let state = loadState();
-    let availableVoices = [];
-    let currentUtterance = null;
 
     const els = {
       aiMessages: document.getElementById("aiMessages"),
@@ -608,7 +553,6 @@
       defaultDevicePill: document.getElementById("defaultDevicePill"),
       lastActionPill: document.getElementById("lastActionPill"),
       debugToggle: document.getElementById("debugToggle"),
-      speakToggle: document.getElementById("speakToggle"),
       helperState: document.getElementById("helperState"),
       brainConfigDialog: document.getElementById("brainConfigDialog"),
       closeConfigBtn: document.getElementById("closeConfigBtn"),
@@ -617,10 +561,7 @@
       brainApiKeyInput: document.getElementById("brainApiKeyInput"),
       brainEndpointSelect: document.getElementById("brainEndpointSelect"),
       defaultSpotifyDeviceSelect: document.getElementById("defaultSpotifyDeviceSelect"),
-      ttsVoiceSelect: document.getElementById("ttsVoiceSelect"),
-      ttsRateSelect: document.getElementById("ttsRateSelect"),
-      quickSendButtons: Array.from(document.querySelectorAll("[data-send]")),
-      repeatLastSpotifyBtn: document.getElementById("repeatLastSpotifyBtn")
+      quickChips: Array.from(document.querySelectorAll(".chip"))
     };
 
     init();
@@ -628,7 +569,6 @@
     function init() {
       pruneChatHistory();
       bindEvents();
-      loadVoices();
       syncConfigInputs();
       renderAIMessages();
       refreshBrainStatusUI();
@@ -637,7 +577,7 @@
       if (!state.aiChat.messages.length) {
         aiPush(
           "system",
-          "MyTalk v1.2.2 ready. Try: play spotify on bedroom, play spotify song so easy by olivia on bedroom, shopping add: milk, or lesson plan grade 4 animals 80 minutes."
+          "MyTalk v1.2.2 ready. Try: play spotify on bedroom, play spotify playlist gym on bedroom, shopping add: milk, or lesson plan grade 4 animals 80 minutes."
         );
       }
     }
@@ -661,7 +601,6 @@
       });
 
       els.clearChatBtn.addEventListener("click", () => {
-        stopSpeaking();
         state.aiChat.messages = [];
         saveState();
         renderAIMessages();
@@ -678,30 +617,13 @@
         renderAIMessages();
       });
 
-      els.speakToggle.addEventListener("change", () => {
-        state.ui.speakReplies = !!els.speakToggle.checked;
-        saveState();
-      });
-
-      els.quickSendButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const text = btn.dataset.send || "";
-          if (text) aiSendMessage(text);
+      els.quickChips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const text = chip.dataset.fill || "";
+          els.aiInput.value = text;
+          els.aiInput.focus();
         });
       });
-
-      els.repeatLastSpotifyBtn.addEventListener("click", () => {
-        const cmd = state.ui.lastSpotifyCommand || "";
-        if (!cmd) {
-          aiPush("system", "No previous Spotify command saved yet.");
-          return;
-        }
-        aiSendMessage(cmd);
-      });
-
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.onvoiceschanged = () => loadVoices();
-      }
     }
 
     function loadState() {
@@ -751,35 +673,12 @@
       });
     }
 
-    function loadVoices() {
-      if (!("speechSynthesis" in window)) return;
-
-      const voices = window.speechSynthesis.getVoices() || [];
-      availableVoices = voices;
-
-      const previous = els.ttsVoiceSelect.value;
-      els.ttsVoiceSelect.innerHTML = `<option value="">System default</option>`;
-
-      voices.forEach((voice) => {
-        const opt = document.createElement("option");
-        opt.value = voice.name;
-        opt.textContent = `${voice.name} (${voice.lang})`;
-        els.ttsVoiceSelect.appendChild(opt);
-      });
-
-      els.ttsVoiceSelect.value = state.ui.ttsVoiceName || previous || "";
-    }
-
     function syncConfigInputs() {
       els.brainUrlInput.value = state.brain.url || "";
       els.brainApiKeyInput.value = state.brain.apiKey || "";
       els.brainEndpointSelect.value = state.brain.endpoint || "/chat";
       els.defaultSpotifyDeviceSelect.value = state.brain.defaultSpotifyDevice || "bedroom";
       els.debugToggle.checked = !!state.ui.debug;
-      els.speakToggle.checked = !!state.ui.speakReplies;
-      els.ttsRateSelect.value = state.ui.ttsRate || "1";
-      loadVoices();
-      els.ttsVoiceSelect.value = state.ui.ttsVoiceName || "";
     }
 
     function saveBrainConfig() {
@@ -787,18 +686,13 @@
       state.brain.apiKey = els.brainApiKeyInput.value.trim();
       state.brain.endpoint = els.brainEndpointSelect.value || "/chat";
       state.brain.defaultSpotifyDevice = els.defaultSpotifyDeviceSelect.value || "bedroom";
-      state.ui.ttsVoiceName = els.ttsVoiceSelect.value || "";
-      state.ui.ttsRate = els.ttsRateSelect.value || "1";
 
       saveState();
       syncConfigInputs();
       refreshBrainStatusUI();
       refreshUIPills();
       els.brainConfigDialog.close();
-      aiPush(
-        "system",
-        `Brain settings saved. Endpoint: ${state.brain.endpoint}. Default device: ${state.brain.defaultSpotifyDevice}.`
-      );
+      aiPush("system", `Brain settings saved. Endpoint: ${state.brain.endpoint}. Default device: ${state.brain.defaultSpotifyDevice}.`);
     }
 
     function normalizeBaseUrl(url) {
@@ -888,7 +782,9 @@
         if (payload.song) appendActionLine(card, `song: ${payload.song}`);
         if (payload.artist) appendActionLine(card, `artist: ${payload.artist}`);
         if (payload.album) appendActionLine(card, `album: ${payload.album}`);
-        if (payload.track_uri) appendActionLine(card, `track_uri: ${payload.track_uri}`);
+        if (!payload.playlist && !payload.song && !payload.artist && !payload.album) {
+          appendActionLine(card, "content: spotify default play");
+        }
         appendActionLine(card, "status: sent");
         return card;
       }
@@ -1010,12 +906,8 @@
           ok: data?.ok
         });
 
-        updateLastActionSummary(actions, message);
+        updateLastActionSummary(actions);
         state.brain.lastStatus = "online";
-
-        if (state.ui.speakReplies && reply) {
-          speakText(reply);
-        }
 
         if (!data?.ok) {
           aiPush("system", data?.meta?.error || data?.meta?.detail || "Brain returned ok=false.");
@@ -1118,7 +1010,7 @@
       return `Brain error: ${raw}`;
     }
 
-    function updateLastActionSummary(actions, originalMessage) {
+    function updateLastActionSummary(actions) {
       if (!Array.isArray(actions) || !actions.length) {
         state.ui.lastActionSummary = "none";
         return;
@@ -1130,9 +1022,8 @@
 
       if (type === "spotify_control") {
         const target = payload.target_device || payload.device || state.brain.defaultSpotifyDevice;
-        const what = payload.track_uri || payload.playlist || payload.song || payload.artist || payload.album || payload.action || "spotify";
+        const what = payload.playlist || payload.song || payload.artist || payload.album || payload.action || "spotify";
         state.ui.lastActionSummary = `spotify → ${target} → ${what}`;
-        state.ui.lastSpotifyCommand = originalMessage || "";
       } else if (payload.item) {
         state.ui.lastActionSummary = `${type} → ${payload.item}`;
       } else if (payload.text) {
@@ -1179,30 +1070,6 @@
         saveState();
         refreshBrainStatusUI();
       }
-    }
-
-    function speakText(text) {
-      if (!("speechSynthesis" in window) || !text) return;
-
-      stopSpeaking();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = Number(state.ui.ttsRate || "1");
-
-      const voiceName = state.ui.ttsVoiceName || "";
-      if (voiceName && availableVoices.length) {
-        const voice = availableVoices.find(v => v.name === voiceName);
-        if (voice) utterance.voice = voice;
-      }
-
-      currentUtterance = utterance;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function stopSpeaking() {
-      if (!("speechSynthesis" in window)) return;
-      window.speechSynthesis.cancel();
-      currentUtterance = null;
     }
 
     function safeJson(value) {
