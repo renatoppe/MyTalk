@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.2.1</title>
+  <title>MyTalk v1.2.2</title>
 
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10131a" />
@@ -133,22 +133,22 @@
       font-weight: 700;
     }
 
-    .subbar, .quickbar {
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
+    .floating-panel {
+      position: absolute;
+      right: 16px;
+      top: calc(100% + 8px);
+      width: min(420px, calc(100vw - 32px));
       background: var(--panel);
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: none;
+      z-index: 30;
     }
 
-    .subbar-left, .subbar-right {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
+    .floating-panel.open {
+      display: block;
     }
 
     .pill {
@@ -163,17 +163,30 @@
       font-size: 13px;
     }
 
-    .quickbar {
-      background: rgba(19, 23, 31, 0.92);
-      position: sticky;
-      top: 68px;
-      z-index: 15;
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .panel-close {
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    .quick-panel-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .quick-label {
       color: var(--muted);
       font-size: 12px;
-      margin-right: 2px;
+      margin: 0;
     }
 
     .chips {
@@ -407,7 +420,12 @@
       .composer-inner { grid-template-columns: 1fr; }
       .composer-actions { grid-template-columns: 1fr 1fr 1fr; min-width: 0; }
       .bubble { max-width: 100%; }
-      .quickbar { top: 74px; }
+      .topbar { position: relative; }
+      .floating-panel {
+        right: 10px;
+        left: 10px;
+        width: auto;
+      }
     }
   </style>
 </head>
@@ -419,43 +437,18 @@
           <h1>MyTalk</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.2.1</p>
+        <p>Standalone Brain chat client • v1.2.2</p>
       </div>
 
       <div class="top-actions">
         <button type="button" id="testBrainBtn">Test Brain</button>
-        <button type="button" id="brainConfigBtn">Brain Config</button>
+        <button type="button" id="brainConfigBtn">Config</button>
+        <button type="button" id="quickMessagesBtn">☰</button>
         <button type="button" id="clearChatBtn">Clear Chat</button>
       </div>
     </header>
 
-    <div class="subbar">
-      <div class="subbar-left">
-        <div class="pill" id="brainEndpointLabel">No Brain URL saved</div>
-        <div class="pill" id="defaultDevicePill">Default Spotify device: bedroom</div>
-      </div>
-      <div class="subbar-right">
-        <label class="pill">
-          <input type="checkbox" id="debugToggle" />
-          Debug
-        </label>
-        <div class="pill" id="lastActionPill">Last action: none</div>
-      </div>
-    </div>
 
-    <div class="quickbar">
-      <span class="quick-label">Quick actions</span>
-      <div class="chips">
-        <button class="chip" data-fill="play spotify on bedroom">Play bedroom</button>
-        <button class="chip" data-fill="pause spotify on bedroom">Pause bedroom</button>
-        <button class="chip" data-fill="play spotify playlist gym on bedroom">Gym playlist</button>
-        <button class="chip" data-fill="play spotify playlist sapuleco on bedroom">Sapuleco</button>
-        <button class="chip" data-fill="play spotify song so easy by olivia on bedroom">Olivia - So Easy</button>
-        <button class="chip" data-fill="shopping add: milk">Add milk</button>
-        <button class="chip" data-fill="shopping add: eggs">Add eggs</button>
-        <button class="chip" data-fill="lesson plan grade 4 animals 80 minutes">Lesson plan G4</button>
-      </div>
-    </div>
 
     <main class="messages" id="aiMessages"></main>
 
@@ -475,47 +468,69 @@
         </div>
       </div>
     </footer>
-  </div>
 
-  <dialog id="brainConfigDialog">
-    <div class="modal-head">
-      <strong>Brain connection</strong>
-      <button type="button" id="closeConfigBtn">✕</button>
+    <div class="floating-panel" id="brainConfigPanel" aria-hidden="true">
+      <div class="panel-head">
+        <strong>Brain connection</strong>
+        <button type="button" class="panel-close" id="closeConfigBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <label>
+          Brain URL
+          <input id="brainUrlInput" type="text" placeholder="https://brain.tailac2201.ts.net" />
+        </label>
+
+        <label>
+          API Key
+          <input id="brainApiKeyInput" type="password" placeholder="X-API-Key" />
+        </label>
+
+        <label>
+          Endpoint
+          <select id="brainEndpointSelect">
+            <option value="/chat">/chat</option>
+          </select>
+        </label>
+
+        <label>
+          Default Spotify device
+          <select id="defaultSpotifyDeviceSelect">
+            <option value="bedroom">bedroom</option>
+            <option value="oppo">oppo</option>
+          </select>
+        </label>
+
+        <label class="pill" style="justify-content:flex-start; margin-top: 8px;">
+          <input type="checkbox" id="debugToggle" />
+          Debug
+        </label>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" id="saveConfigBtn" class="primary">Save</button>
+      </div>
     </div>
 
-    <div class="modal-body">
-      <label>
-        Brain URL
-        <input id="brainUrlInput" type="text" placeholder="https://brain.tailac2201.ts.net" />
-      </label>
-
-      <label>
-        API Key
-        <input id="brainApiKeyInput" type="password" placeholder="X-API-Key" />
-      </label>
-
-      <label>
-        Endpoint
-        <select id="brainEndpointSelect">
-          <option value="/chat">/chat</option>
-        </select>
-      </label>
-
-      <label>
-        Default Spotify device
-        <select id="defaultSpotifyDeviceSelect">
-          <option value="bedroom">bedroom</option>
-          <option value="oppo">oppo</option>
-          <option value="main">main</option>
-        </select>
-      </label>
+    <div class="floating-panel" id="quickMessagesPanel" aria-hidden="true">
+      <div class="panel-head">
+        <strong>Quick messages</strong>
+        <button type="button" class="panel-close" id="closeQuickBtn">✕</button>
+      </div>
+      <div class="quick-panel-wrap">
+        <p class="quick-label">Tap one to fill the chat box.</p>
+        <div class="chips">
+          <button class="chip" data-fill="play spotify on bedroom">Play bedroom</button>
+          <button class="chip" data-fill="pause spotify on bedroom">Pause bedroom</button>
+          <button class="chip" data-fill="play spotify playlist gym on bedroom">Gym playlist</button>
+          <button class="chip" data-fill="play spotify playlist sapuleco on bedroom">Sapuleco</button>
+          <button class="chip" data-fill="play spotify song so easy by olivia on bedroom">Olivia - So Easy</button>
+          <button class="chip" data-fill="play spotify on oppo">Play oppo</button>
+          <button class="chip" data-fill="pause spotify on oppo">Pause oppo</button>
+          <button class="chip" data-fill="next song on oppo">Next oppo</button>
+        </div>
+      </div>
     </div>
-
-    <div class="modal-foot">
-      <button type="button" id="saveConfigBtn" class="primary">Save</button>
-    </div>
-  </dialog>
-
   <script>
     const MYTALK_STORAGE_KEY = "mytalk_state_v121";
     const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -549,13 +564,13 @@
       brainConfigBtn: document.getElementById("brainConfigBtn"),
       testBrainBtn: document.getElementById("testBrainBtn"),
       brainInlineStatus: document.getElementById("brainInlineStatus"),
-      brainEndpointLabel: document.getElementById("brainEndpointLabel"),
-      defaultDevicePill: document.getElementById("defaultDevicePill"),
-      lastActionPill: document.getElementById("lastActionPill"),
+      quickMessagesBtn: document.getElementById("quickMessagesBtn"),
       debugToggle: document.getElementById("debugToggle"),
       helperState: document.getElementById("helperState"),
-      brainConfigDialog: document.getElementById("brainConfigDialog"),
+      brainConfigPanel: document.getElementById("brainConfigPanel"),
+      quickMessagesPanel: document.getElementById("quickMessagesPanel"),
       closeConfigBtn: document.getElementById("closeConfigBtn"),
+      closeQuickBtn: document.getElementById("closeQuickBtn"),
       saveConfigBtn: document.getElementById("saveConfigBtn"),
       brainUrlInput: document.getElementById("brainUrlInput"),
       brainApiKeyInput: document.getElementById("brainApiKeyInput"),
@@ -606,8 +621,10 @@
         renderAIMessages();
       });
 
-      els.brainConfigBtn.addEventListener("click", () => els.brainConfigDialog.showModal());
-      els.closeConfigBtn.addEventListener("click", () => els.brainConfigDialog.close());
+      els.brainConfigBtn.addEventListener("click", () => togglePanel("config"));
+      els.quickMessagesBtn.addEventListener("click", () => togglePanel("quick"));
+      els.closeConfigBtn.addEventListener("click", closePanels);
+      els.closeQuickBtn.addEventListener("click", closePanels);
       els.saveConfigBtn.addEventListener("click", saveBrainConfig);
       els.testBrainBtn.addEventListener("click", testBrainConnection);
 
@@ -622,8 +639,53 @@
           const text = chip.dataset.fill || "";
           els.aiInput.value = text;
           els.aiInput.focus();
+          closePanels();
         });
       });
+
+      document.addEventListener("click", (e) => {
+        const target = e.target;
+        if (!(target instanceof Element)) return;
+        const insideConfig = target.closest("#brainConfigPanel") || target.closest("#brainConfigBtn");
+        const insideQuick = target.closest("#quickMessagesPanel") || target.closest("#quickMessagesBtn");
+        if (!insideConfig && !insideQuick) closePanels();
+      });
+    }
+
+
+    function openConfigPanel() {
+      els.brainConfigPanel.classList.add("open");
+      els.quickMessagesPanel.classList.remove("open");
+      els.brainConfigPanel.setAttribute("aria-hidden", "false");
+      els.quickMessagesPanel.setAttribute("aria-hidden", "true");
+    }
+
+    function openQuickPanel() {
+      els.quickMessagesPanel.classList.add("open");
+      els.brainConfigPanel.classList.remove("open");
+      els.quickMessagesPanel.setAttribute("aria-hidden", "false");
+      els.brainConfigPanel.setAttribute("aria-hidden", "true");
+    }
+
+    function closePanels() {
+      els.brainConfigPanel.classList.remove("open");
+      els.quickMessagesPanel.classList.remove("open");
+      els.brainConfigPanel.setAttribute("aria-hidden", "true");
+      els.quickMessagesPanel.setAttribute("aria-hidden", "true");
+    }
+
+    function togglePanel(which) {
+      if (which === "config") {
+        const willOpen = !els.brainConfigPanel.classList.contains("open");
+        closePanels();
+        if (willOpen) openConfigPanel();
+        return;
+      }
+      if (which === "quick") {
+        const willOpen = !els.quickMessagesPanel.classList.contains("open");
+        closePanels();
+        if (willOpen) openQuickPanel();
+      }
     }
 
     function loadState() {
@@ -691,7 +753,7 @@
       syncConfigInputs();
       refreshBrainStatusUI();
       refreshUIPills();
-      els.brainConfigDialog.close();
+      closePanels();
       aiPush("system", `Brain settings saved. Endpoint: ${state.brain.endpoint}. Default device: ${state.brain.defaultSpotifyDevice}.`);
     }
 
@@ -875,7 +937,7 @@
 
       if (!state.brain.url) {
         aiPush("system", "Set your Brain URL first in Brain Config.");
-        els.brainConfigDialog.showModal();
+        openConfigPanel();
         return;
       }
 
@@ -1039,20 +1101,24 @@
       els.brainInlineStatus.style.borderColor = online ? "rgba(47,191,113,0.45)" : "rgba(224,93,93,0.45)";
       els.brainInlineStatus.style.color = online ? "#b8f0cc" : "#ffb3b3";
 
-      els.brainEndpointLabel.textContent = state.brain.url
+      const savedUrl = state.brain.url
         ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
         : "No Brain URL saved";
+      els.helperState.textContent = savedUrl;
     }
 
     function refreshUIPills() {
-      els.defaultDevicePill.textContent = `Default Spotify device: ${state.brain.defaultSpotifyDevice || "bedroom"}`;
-      els.lastActionPill.textContent = `Last action: ${state.ui.lastActionSummary || "none"}`;
+      const savedUrl = state.brain.url
+        ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
+        : "No Brain URL saved";
+      const lastAction = state.ui.lastActionSummary || "none";
+      els.helperState.textContent = `${lastAction} • ${savedUrl}`;
     }
 
     async function testBrainConnection() {
       if (!state.brain.url) {
         aiPush("system", "Set your Brain URL first in Brain Config.");
-        els.brainConfigDialog.showModal();
+        openConfigPanel();
         return;
       }
 
