@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.2.2</title>
+  <title>MyTalk v1.3.0</title>
 
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10131a" />
@@ -56,8 +56,9 @@
       max-width: 920px;
       min-height: 100vh;
       display: grid;
-      grid-template-rows: auto auto auto 1fr auto;
+      grid-template-rows: auto 1fr auto;
       background: linear-gradient(180deg, #10131a 0%, #0f1115 100%);
+      position: relative;
     }
 
     .topbar {
@@ -110,6 +111,7 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      position: relative;
     }
 
     button {
@@ -136,8 +138,8 @@
     .floating-panel {
       position: absolute;
       right: 16px;
-      top: calc(100% + 8px);
-      width: min(420px, calc(100vw - 32px));
+      top: 74px;
+      width: min(430px, calc(100vw - 32px));
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 16px;
@@ -147,21 +149,7 @@
       z-index: 30;
     }
 
-    .floating-panel.open {
-      display: block;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--muted);
-      font-size: 13px;
-    }
+    .floating-panel.open { display: block; }
 
     .panel-head {
       display: flex;
@@ -209,6 +197,48 @@
     .chip:hover {
       border-color: var(--accent);
       color: var(--accent-2);
+    }
+
+    .panel-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel-grid label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .panel-grid input,
+    .panel-grid select {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .panel-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .mini-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .messages {
@@ -269,25 +299,10 @@
       color: var(--muted);
     }
 
-    .action-card.spotify {
-      border-color: rgba(29,185,84,0.35);
-      background: rgba(29,185,84,0.08);
-    }
-
-    .action-card.shopping {
-      border-color: rgba(255,166,87,0.35);
-      background: rgba(255,166,87,0.08);
-    }
-
-    .action-card.lesson {
-      border-color: rgba(139,92,246,0.35);
-      background: rgba(139,92,246,0.08);
-    }
-
-    .action-card.task {
-      border-color: rgba(249,115,22,0.35);
-      background: rgba(249,115,22,0.08);
-    }
+    .action-card.spotify { border-color: rgba(29,185,84,0.35); background: rgba(29,185,84,0.08); }
+    .action-card.shopping { border-color: rgba(255,166,87,0.35); background: rgba(255,166,87,0.08); }
+    .action-card.lesson { border-color: rgba(139,92,246,0.35); background: rgba(139,92,246,0.08); }
+    .action-card.task { border-color: rgba(249,115,22,0.35); background: rgba(249,115,22,0.08); }
 
     .action-title {
       font-size: 13px;
@@ -360,71 +375,87 @@
       flex-wrap: wrap;
     }
 
-    dialog {
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
-      border-radius: 18px;
-      width: min(600px, calc(100vw - 24px));
-      padding: 0;
-    }
-
-    dialog::backdrop { background: rgba(0,0,0,0.55); }
-
-    .modal-head, .modal-body, .modal-foot {
-      padding: 16px;
-    }
-
-    .modal-head {
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-body {
-      display: grid;
-      gap: 12px;
-    }
-
-    .modal-body label {
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .modal-body input, .modal-body select {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 10px 12px;
-      font: inherit;
-    }
-
-    .modal-foot {
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
     .mono {
       font-family: Consolas, Monaco, monospace;
       font-size: 12px;
     }
 
+    .attachment-card,
+    .export-card {
+      margin-top: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(88,166,255,0.28);
+      background: rgba(88,166,255,0.08);
+      padding: 12px;
+    }
+
+    .attachment-head,
+    .export-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .attachment-title,
+    .export-title {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .attachment-subtitle,
+    .export-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .attachment-preview {
+      color: var(--text);
+      font-size: 13px;
+      margin-top: 8px;
+      max-height: 140px;
+      overflow: auto;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .attachment-actions,
+    .export-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tiny {
+      padding: 7px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+    }
+
+    .tiny.primary { color: #08111f; }
+
+    .capabilities-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hidden { display: none !important; }
+
     @media (max-width: 700px) {
       .composer-inner { grid-template-columns: 1fr; }
       .composer-actions { grid-template-columns: 1fr 1fr 1fr; min-width: 0; }
       .bubble { max-width: 100%; }
-      .topbar { position: relative; }
       .floating-panel {
         right: 10px;
         left: 10px;
         width: auto;
+        top: 82px;
       }
     }
   </style>
@@ -437,7 +468,7 @@
           <h1>MyTalk</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.2.2</p>
+        <p>Standalone Brain chat client • v1.3.0</p>
       </div>
 
       <div class="top-actions">
@@ -447,8 +478,6 @@
         <button type="button" id="clearChatBtn">Clear Chat</button>
       </div>
     </header>
-
-
 
     <main class="messages" id="aiMessages"></main>
 
@@ -475,10 +504,10 @@
         <button type="button" class="panel-close" id="closeConfigBtn">✕</button>
       </div>
 
-      <div class="modal-body">
+      <div class="panel-grid">
         <label>
           Brain URL
-          <input id="brainUrlInput" type="text" placeholder="https://brain.tailac2201.ts.net" />
+          <input id="brainUrlInput" type="text" placeholder="https://brain.tail..." />
         </label>
 
         <label>
@@ -501,13 +530,13 @@
           </select>
         </label>
 
-        <label class="pill" style="justify-content:flex-start; margin-top: 8px;">
+        <label class="mini-pill" style="justify-content:flex-start;">
           <input type="checkbox" id="debugToggle" />
           Debug
         </label>
       </div>
 
-      <div class="modal-foot">
+      <div class="panel-row" style="justify-content:flex-end; margin-top: 12px;">
         <button type="button" id="saveConfigBtn" class="primary">Save</button>
       </div>
     </div>
@@ -528,11 +557,55 @@
           <button class="chip" data-fill="play spotify on oppo">Play oppo</button>
           <button class="chip" data-fill="pause spotify on oppo">Pause oppo</button>
           <button class="chip" data-fill="next song on oppo">Next oppo</button>
+          <button class="chip" data-fill="create a lesson plan for grade 4 animals 80 minutes">Lesson plan</button>
+          <button class="chip" data-fill="create a short test about food and drinks for grade 4">Test</button>
+          <button class="chip" data-fill="list my projects">Coder</button>
         </div>
       </div>
     </div>
+
+    <div class="floating-panel" id="attachPanel" aria-hidden="true">
+      <div class="panel-head">
+        <strong>Attach to Brain</strong>
+        <button type="button" class="panel-close" id="closeAttachBtn">✕</button>
+      </div>
+
+      <div class="panel-grid">
+        <label>
+          Title override
+          <input id="attachTitleInput" type="text" placeholder="Optional title" />
+        </label>
+
+        <label>
+          Notes
+          <input id="attachNotesInput" type="text" placeholder="Optional notes" />
+        </label>
+
+        <label>
+          Tags
+          <input id="attachTagsInput" type="text" placeholder="comma, separated, tags" />
+        </label>
+
+        <label class="mini-pill" style="justify-content:flex-start;">
+          <input type="checkbox" id="pdfSplitToggle" />
+          Split PDFs by pages when possible
+        </label>
+
+        <div class="panel-row">
+          <button type="button" id="pickFilesBtn" class="primary">Pick file(s)</button>
+        </div>
+
+        <div class="capabilities-note" id="capabilitiesNote">
+          Supported via Brain pipeline: txt, md, pdf, docx, csv, xlsx, pptx, png, jpg, jpeg, webp, zip.
+        </div>
+      </div>
+    </div>
+
+    <input id="hiddenFileInput" class="hidden" type="file" multiple
+      accept=".txt,.md,.pdf,.docx,.csv,.xlsx,.pptx,.png,.jpg,.jpeg,.webp,.zip" />
+
   <script>
-    const MYTALK_STORAGE_KEY = "mytalk_state_v121";
+    const MYTALK_STORAGE_KEY = "mytalk_state_v130";
     const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
     const defaultState = {
@@ -546,6 +619,13 @@
       ui: {
         debug: false,
         lastActionSummary: "none"
+      },
+      capabilities: {
+        names: []
+      },
+      content: {
+        lastAttachment: null,
+        attachments: []
       },
       aiChat: {
         messages: []
@@ -569,14 +649,23 @@
       helperState: document.getElementById("helperState"),
       brainConfigPanel: document.getElementById("brainConfigPanel"),
       quickMessagesPanel: document.getElementById("quickMessagesPanel"),
+      attachPanel: document.getElementById("attachPanel"),
       closeConfigBtn: document.getElementById("closeConfigBtn"),
       closeQuickBtn: document.getElementById("closeQuickBtn"),
+      closeAttachBtn: document.getElementById("closeAttachBtn"),
       saveConfigBtn: document.getElementById("saveConfigBtn"),
       brainUrlInput: document.getElementById("brainUrlInput"),
       brainApiKeyInput: document.getElementById("brainApiKeyInput"),
       brainEndpointSelect: document.getElementById("brainEndpointSelect"),
       defaultSpotifyDeviceSelect: document.getElementById("defaultSpotifyDeviceSelect"),
-      quickChips: Array.from(document.querySelectorAll(".chip"))
+      quickChips: Array.from(document.querySelectorAll(".chip")),
+      hiddenFileInput: document.getElementById("hiddenFileInput"),
+      pickFilesBtn: document.getElementById("pickFilesBtn"),
+      attachTitleInput: document.getElementById("attachTitleInput"),
+      attachNotesInput: document.getElementById("attachNotesInput"),
+      attachTagsInput: document.getElementById("attachTagsInput"),
+      pdfSplitToggle: document.getElementById("pdfSplitToggle"),
+      capabilitiesNote: document.getElementById("capabilitiesNote")
     };
 
     init();
@@ -592,16 +681,26 @@
       if (!state.aiChat.messages.length) {
         aiPush(
           "system",
-          "MyTalk v1.2.2 ready. Try: play spotify on bedroom, play spotify playlist gym on bedroom, shopping add: milk, or lesson plan grade 4 animals 80 minutes."
+          "MyTalk v1.3.0 ready. Attach files or try: play spotify on bedroom, create a lesson plan for grade 4 animals 80 minutes, create a short test about food and drinks, or list my projects."
         );
+      }
+
+      if (state.brain.url) {
+        discoverCapabilities().catch(() => {});
       }
     }
 
     function bindEvents() {
       els.aiSendBtn.addEventListener("click", () => aiSendMessage());
 
-      els.attachBtn.addEventListener("click", () => {
-        aiPush("system", "Attach is visible in the UI. File/image action flow can be connected later.");
+      els.attachBtn.addEventListener("click", () => togglePanel("attach"));
+      els.pickFilesBtn.addEventListener("click", () => {
+        els.hiddenFileInput.value = "";
+        els.hiddenFileInput.click();
+      });
+      els.hiddenFileInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length) processSelectedFiles(files);
       });
 
       els.micBtn.addEventListener("click", () => {
@@ -625,6 +724,7 @@
       els.quickMessagesBtn.addEventListener("click", () => togglePanel("quick"));
       els.closeConfigBtn.addEventListener("click", closePanels);
       els.closeQuickBtn.addEventListener("click", closePanels);
+      els.closeAttachBtn.addEventListener("click", closePanels);
       els.saveConfigBtn.addEventListener("click", saveBrainConfig);
       els.testBrainBtn.addEventListener("click", testBrainConnection);
 
@@ -643,35 +743,107 @@
         });
       });
 
+      els.aiMessages.addEventListener("click", handleMessageAreaClick);
+
       document.addEventListener("click", (e) => {
         const target = e.target;
         if (!(target instanceof Element)) return;
         const insideConfig = target.closest("#brainConfigPanel") || target.closest("#brainConfigBtn");
         const insideQuick = target.closest("#quickMessagesPanel") || target.closest("#quickMessagesBtn");
-        if (!insideConfig && !insideQuick) closePanels();
+        const insideAttach = target.closest("#attachPanel") || target.closest("#attachBtn");
+        if (!insideConfig && !insideQuick && !insideAttach) closePanels();
       });
     }
 
+    async function handleMessageAreaClick(e) {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const useBtn = target.closest("[data-use-attachment]");
+      if (useBtn) {
+        const attachmentId = useBtn.getAttribute("data-use-attachment");
+        const action = useBtn.getAttribute("data-action") || "chat";
+        const attachment = (state.content.attachments || []).find((item) => item.id === attachmentId);
+        if (!attachment) return;
+
+        const map = {
+          chat: {
+            moduleTarget: "general",
+            message: `Use the attached content "${attachment.title}" in the chat.`
+          },
+          lesson: {
+            moduleTarget: "lesson_plan_generate",
+            message: `Create a lesson plan based on the attached content "${attachment.title}".`
+          },
+          test: {
+            moduleTarget: "test_generator",
+            message: `Create a test based on the attached content "${attachment.title}".`
+          },
+          code: {
+            moduleTarget: "coder",
+            message: `Use the attached content "${attachment.title}" to help with code generation or editing.`
+          },
+          translate: {
+            moduleTarget: "translate",
+            message: `Translate the attached content "${attachment.title}".`
+          },
+          summarize: {
+            moduleTarget: "general",
+            message: `Summarize the attached content "${attachment.title}".`
+          }
+        };
+
+        const chosen = map[action] || map.chat;
+        await aiSendMessage(chosen.message, {
+          contentIds: attachment.content_ids || [],
+          moduleTarget: chosen.moduleTarget,
+          attachmentTitle: attachment.title
+        });
+        return;
+      }
+
+      const exportBtn = target.closest("[data-export-from]");
+      if (exportBtn) {
+        const msgId = exportBtn.getAttribute("data-export-from");
+        const format = exportBtn.getAttribute("data-format") || "txt";
+        const msg = (state.aiChat.messages || []).find((item) => item.id === msgId);
+        if (!msg) return;
+        await exportMessage(msg, format);
+      }
+    }
 
     function openConfigPanel() {
       els.brainConfigPanel.classList.add("open");
       els.quickMessagesPanel.classList.remove("open");
-      els.brainConfigPanel.setAttribute("aria-hidden", "false");
-      els.quickMessagesPanel.setAttribute("aria-hidden", "true");
+      els.attachPanel.classList.remove("open");
+      setAriaPanels("config");
     }
 
     function openQuickPanel() {
       els.quickMessagesPanel.classList.add("open");
       els.brainConfigPanel.classList.remove("open");
-      els.quickMessagesPanel.setAttribute("aria-hidden", "false");
-      els.brainConfigPanel.setAttribute("aria-hidden", "true");
+      els.attachPanel.classList.remove("open");
+      setAriaPanels("quick");
+    }
+
+    function openAttachPanel() {
+      els.attachPanel.classList.add("open");
+      els.quickMessagesPanel.classList.remove("open");
+      els.brainConfigPanel.classList.remove("open");
+      setAriaPanels("attach");
+    }
+
+    function setAriaPanels(which) {
+      els.brainConfigPanel.setAttribute("aria-hidden", which === "config" ? "false" : "true");
+      els.quickMessagesPanel.setAttribute("aria-hidden", which === "quick" ? "false" : "true");
+      els.attachPanel.setAttribute("aria-hidden", which === "attach" ? "false" : "true");
     }
 
     function closePanels() {
       els.brainConfigPanel.classList.remove("open");
       els.quickMessagesPanel.classList.remove("open");
-      els.brainConfigPanel.setAttribute("aria-hidden", "true");
-      els.quickMessagesPanel.setAttribute("aria-hidden", "true");
+      els.attachPanel.classList.remove("open");
+      setAriaPanels("");
     }
 
     function togglePanel(which) {
@@ -685,6 +857,12 @@
         const willOpen = !els.quickMessagesPanel.classList.contains("open");
         closePanels();
         if (willOpen) openQuickPanel();
+        return;
+      }
+      if (which === "attach") {
+        const willOpen = !els.attachPanel.classList.contains("open");
+        closePanels();
+        if (willOpen) openAttachPanel();
       }
     }
 
@@ -743,7 +921,7 @@
       els.debugToggle.checked = !!state.ui.debug;
     }
 
-    function saveBrainConfig() {
+    async function saveBrainConfig() {
       state.brain.url = normalizeBaseUrl(els.brainUrlInput.value);
       state.brain.apiKey = els.brainApiKeyInput.value.trim();
       state.brain.endpoint = els.brainEndpointSelect.value || "/chat";
@@ -755,6 +933,10 @@
       refreshUIPills();
       closePanels();
       aiPush("system", `Brain settings saved. Endpoint: ${state.brain.endpoint}. Default device: ${state.brain.defaultSpotifyDevice}.`);
+
+      if (state.brain.url) {
+        await discoverCapabilities().catch(() => {});
+      }
     }
 
     function normalizeBaseUrl(url) {
@@ -792,15 +974,21 @@
         meta.textContent = bits.join(" • ");
         bubble.appendChild(meta);
 
+        if (msg.attachment) {
+          bubble.appendChild(renderAttachmentCard(msg.attachment));
+        }
+
         if (msg.actions && msg.actions.length) {
           const actionsBox = document.createElement("div");
           actionsBox.className = "actions-box";
-
           for (const action of msg.actions) {
             actionsBox.appendChild(renderActionCard(action));
           }
-
           bubble.appendChild(actionsBox);
+        }
+
+        if (msg.role === "brain" && isExportableMessage(msg)) {
+          bubble.appendChild(renderExportCard(msg));
         }
 
         if (state.ui.debug && msg.role === "brain") {
@@ -820,6 +1008,88 @@
       }
 
       els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+    }
+
+    function renderAttachmentCard(attachment) {
+      const wrap = document.createElement("div");
+      wrap.className = "attachment-card";
+
+      const head = document.createElement("div");
+      head.className = "attachment-head";
+      head.innerHTML = `
+        <div>
+          <div class="attachment-title">${escapeHtml(attachment.title || attachment.filename || "Attachment")}</div>
+          <div class="attachment-subtitle">${escapeHtml(attachment.kind || "content")} • ${escapeHtml(attachment.file_type || "unknown")} • ${escapeHtml(attachment.status || "ready")}</div>
+        </div>
+      `;
+      wrap.appendChild(head);
+
+      if (attachment.preview) {
+        const preview = document.createElement("div");
+        preview.className = "attachment-preview";
+        preview.textContent = attachment.preview;
+        wrap.appendChild(preview);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "attachment-actions";
+      const buttons = [
+        ["chat", "Chat"],
+        ["lesson", "Lesson Plan"],
+        ["test", "Tests"],
+        ["code", "Code"],
+        ["translate", "Translate"],
+        ["summarize", "Summarize"]
+      ];
+      for (const [action, label] of buttons) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = action === "chat" ? "tiny primary" : "tiny";
+        btn.textContent = label;
+        btn.setAttribute("data-use-attachment", attachment.id);
+        btn.setAttribute("data-action", action);
+        actions.appendChild(btn);
+      }
+      wrap.appendChild(actions);
+      return wrap;
+    }
+
+    function renderExportCard(msg) {
+      const wrap = document.createElement("div");
+      wrap.className = "export-card";
+
+      const head = document.createElement("div");
+      head.className = "export-head";
+      const moduleTarget = msg.requestContext?.moduleTarget || "general";
+      head.innerHTML = `
+        <div>
+          <div class="export-title">Export result</div>
+          <div class="export-subtitle">${escapeHtml(moduleTarget)} → export_document</div>
+        </div>
+      `;
+      wrap.appendChild(head);
+
+      const actions = document.createElement("div");
+      actions.className = "export-actions";
+
+      const buttons = [
+        ["txt", "TXT"],
+        ["docx", "DOCX"],
+        ["pdf", "PDF"]
+      ];
+
+      for (const [format, label] of buttons) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = format === "docx" ? "tiny primary" : "tiny";
+        btn.textContent = `Export ${label}`;
+        btn.setAttribute("data-export-from", msg.id);
+        btn.setAttribute("data-format", format);
+        actions.appendChild(btn);
+      }
+
+      wrap.appendChild(actions);
+      return wrap;
     }
 
     function renderActionCard(action) {
@@ -931,7 +1201,7 @@
       }
     }
 
-    async function aiSendMessage(forceText = "") {
+    async function aiSendMessage(forceText = "", options = {}) {
       let message = (forceText || els.aiInput.value || "").trim();
       if (!message) return;
 
@@ -943,14 +1213,20 @@
 
       message = maybeApplyDefaultDevice(message);
 
-      aiPush("user", message);
+      const requestContext = {
+        moduleTarget: options.moduleTarget || "general",
+        contentIds: options.contentIds || [],
+        attachmentTitle: options.attachmentTitle || ""
+      };
+
+      aiPush("user", message, { requestContext });
       els.aiInput.value = "";
       setComposerBusy(true);
       showTyping();
 
       try {
         const startedAt = performance.now();
-        const data = await brainChat(message);
+        const data = await brainChat(message, requestContext);
         const latencyMs = Math.round(performance.now() - startedAt);
 
         hideTyping();
@@ -965,7 +1241,8 @@
         aiPush("brain", reply, {
           actions,
           meta,
-          ok: data?.ok
+          ok: data?.ok,
+          requestContext
         });
 
         updateLastActionSummary(actions);
@@ -1001,12 +1278,6 @@
       if (!spotifyLike) return message;
       if (/\bon\s+(bedroom|oppo|main)\b/i.test(message)) return message;
 
-      if (low.startsWith("pause spotify")) return `${message} on ${device}`;
-      if (low.startsWith("resume spotify")) return `${message} on ${device}`;
-      if (low.startsWith("stop spotify")) return `${message} on ${device}`;
-      if (low.startsWith("next")) return `${message} on ${device}`;
-      if (low.startsWith("previous")) return `${message} on ${device}`;
-
       return `${message} on ${device}`;
     }
 
@@ -1033,19 +1304,31 @@
       els.helperState.textContent = isBusy ? "Sending to Brain..." : "Ready";
     }
 
-    async function brainChat(message) {
+    async function brainChat(message, requestContext = {}) {
       const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
       const headers = { "Content-Type": "application/json" };
       if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
+
+      const payload = {
+        message,
+        scope: "global"
+      };
+
+      if (requestContext.moduleTarget && requestContext.moduleTarget !== "general") {
+        payload.module_target = requestContext.moduleTarget;
+      }
+      if (Array.isArray(requestContext.contentIds) && requestContext.contentIds.length) {
+        payload.content_ids = requestContext.contentIds;
+      }
 
       const response = await fetchWithTimeout(
         url,
         {
           method: "POST",
           headers,
-          body: JSON.stringify({ message, scope: "global" })
+          body: JSON.stringify(payload)
         },
-        20000
+        25000
       );
 
       if (!response.ok) {
@@ -1054,6 +1337,341 @@
       }
 
       return response.json();
+    }
+
+    async function processSelectedFiles(files) {
+      if (!files.length) return;
+      if (!state.brain.url) {
+        aiPush("system", "Set your Brain URL first in Brain Config.");
+        openConfigPanel();
+        return;
+      }
+
+      const tags = parseTags(els.attachTagsInput.value);
+      const titleOverride = els.attachTitleInput.value.trim();
+      const notes = els.attachNotesInput.value.trim();
+      const pdfSplit = !!els.pdfSplitToggle.checked;
+
+      setComposerBusy(true);
+      closePanels();
+
+      try {
+        if (files.length > 1 && files.every(isImageFile)) {
+          const uploadResults = [];
+          for (const file of files) {
+            uploadResults.push(await uploadContentFile(file));
+          }
+
+          const savedPaths = uploadResults.map((item) => item.saved_path).filter(Boolean);
+          const batchResult = await runCapability("content_ingest_image_batch", {
+            action: "ingest_image_batch",
+            input_paths: savedPaths,
+            source_app: "mytalk",
+            module_target: "general",
+            title: titleOverride || `Image batch (${files.length})`,
+            notes,
+            tags
+          });
+
+          const attachment = normalizeBatchAttachment(batchResult, files);
+          pushAttachmentMessage(attachment);
+          return;
+        }
+
+        if (files.length === 1 && isZipFile(files[0])) {
+          const uploaded = await uploadContentFile(files[0]);
+          const zipResult = await runCapability("content_ingest_zip", {
+            action: "ingest_zip",
+            input_path: uploaded.saved_path,
+            source_app: "mytalk",
+            module_target: "general",
+            title: titleOverride || stripExt(files[0].name),
+            notes,
+            tags
+          });
+
+          const attachment = normalizeZipAttachment(zipResult, files[0]);
+          pushAttachmentMessage(attachment);
+          return;
+        }
+
+        for (const file of files) {
+          const uploaded = await uploadContentFile(file);
+          const attachment = await ingestSingleUploadedFile(uploaded, file, {
+            titleOverride,
+            notes,
+            tags,
+            pdfSplit
+          });
+          pushAttachmentMessage(attachment);
+        }
+      } catch (err) {
+        aiPush("system", classifyBrainError(err));
+      } finally {
+        setComposerBusy(false);
+      }
+    }
+
+    async function uploadContentFile(file) {
+      const url = `${state.brain.url}/content/upload`;
+      const headers = {};
+      if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
+
+      const body = new FormData();
+      body.append("file", file);
+      body.append("source_app", "mytalk");
+
+      const response = await fetchWithTimeout(url, {
+        method: "POST",
+        headers,
+        body
+      }, 30000);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(`Upload HTTP ${response.status}${text ? ` — ${text}` : ""}`);
+      }
+
+      return response.json();
+    }
+
+    async function ingestSingleUploadedFile(uploaded, file, opts) {
+      const detected = detectPipelineType(uploaded, file);
+      const title = opts.titleOverride || stripExt(file.name);
+      const commonPayload = {
+        source_app: "mytalk",
+        module_target: "general",
+        title,
+        notes: opts.notes,
+        tags: opts.tags
+      };
+
+      let result;
+      if (detected === "image") {
+        result = await runCapability("content_ingest_image", {
+          action: "ingest_image",
+          input_path: uploaded.saved_path,
+          ...commonPayload
+        });
+      } else {
+        result = await runCapability("content_ingest_file", {
+          action: "ingest_file",
+          input_path: uploaded.saved_path,
+          split_mode: opts.pdfSplit && file.name.toLowerCase().endsWith(".pdf") ? "pages" : "full",
+          ...commonPayload
+        });
+      }
+
+      return normalizeSingleAttachment(result, file, detected);
+    }
+
+    function pushAttachmentMessage(attachment) {
+      state.content.lastAttachment = attachment;
+      const attachments = Array.isArray(state.content.attachments) ? state.content.attachments : [];
+      attachments.unshift(attachment);
+      state.content.attachments = attachments.slice(0, 20);
+      saveState();
+
+      aiPush("system", `Attached: ${attachment.title}`, { attachment });
+    }
+
+    function normalizeSingleAttachment(result, file, detected) {
+      const contentIds = [];
+      let preview = "";
+      let fileType = result?.file_type || file.name.split(".").pop() || detected;
+
+      if (Array.isArray(result?.items)) {
+        contentIds.push(...result.items.map((item) => item.content_id).filter(Boolean));
+        preview = result.items.map((item) => `[Page ${item.page || "?"}] ${item.preview || ""}`).join("\n\n").slice(0, 1200);
+      } else if (result?.content_id) {
+        contentIds.push(result.content_id);
+        preview = result.extracted_text_preview || result.preview || "";
+      }
+
+      return {
+        id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        title: stripExt(file.name),
+        filename: file.name,
+        kind: detected,
+        file_type: fileType,
+        preview: preview || "No preview returned.",
+        content_ids: contentIds,
+        status: result?.ok ? "ready" : "failed",
+        raw: result
+      };
+    }
+
+    function normalizeBatchAttachment(result, files) {
+      const contentIds = [];
+      const previews = [];
+      for (const item of (result?.items || [])) {
+        const inner = item?.result || {};
+        if (inner.content_id) contentIds.push(inner.content_id);
+        if (inner.extracted_text_preview) previews.push(inner.extracted_text_preview);
+      }
+
+      return {
+        id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        title: `${files.length} images`,
+        filename: files.map((f) => f.name).join(", "),
+        kind: "image_batch",
+        file_type: "batch",
+        preview: previews.join("\n\n").slice(0, 1200) || `Processed ${files.length} images.`,
+        content_ids: contentIds,
+        status: result?.ok ? "ready" : "failed",
+        raw: result
+      };
+    }
+
+    function normalizeZipAttachment(result, file) {
+      const contentIds = [];
+      const previews = [];
+      for (const item of (result?.items || [])) {
+        const inner = item?.result || {};
+        if (inner.content_id) contentIds.push(inner.content_id);
+        if (Array.isArray(inner.items)) {
+          for (const sub of inner.items) {
+            if (sub.content_id) contentIds.push(sub.content_id);
+            if (sub.preview) previews.push(sub.preview);
+          }
+        }
+        if (inner.extracted_text_preview) previews.push(inner.extracted_text_preview);
+      }
+
+      return {
+        id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        title: stripExt(file.name),
+        filename: file.name,
+        kind: "zip",
+        file_type: "zip",
+        preview: previews.join("\n\n").slice(0, 1200) || `ZIP processed. Files: ${result?.count || 0}.`,
+        content_ids: contentIds,
+        status: result?.ok ? "ready" : "failed",
+        raw: result
+      };
+    }
+
+    async function runCapability(name, payload) {
+      const url = `${state.brain.url}/capability/run`;
+      const headers = { "Content-Type": "application/json" };
+      if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
+
+      const response = await fetchWithTimeout(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ name, payload })
+      }, 30000);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(`Capability HTTP ${response.status}${text ? ` — ${text}` : ""}`);
+      }
+
+      return response.json();
+    }
+
+    async function exportMessage(msg, format) {
+      if (!state.brain.url) {
+        aiPush("system", "Set your Brain URL first in Brain Config.");
+        return;
+      }
+
+      try {
+        setComposerBusy(true);
+
+        const moduleTarget = msg.requestContext?.moduleTarget || "general";
+        const title = guessExportTitle(moduleTarget, msg.text);
+        const payload = {
+          format,
+          document_type: mapDocumentType(moduleTarget),
+          title,
+          filename_base: slugify(title),
+          content: buildExportContent(moduleTarget, msg.text)
+        };
+
+        if (format === "pdf") payload.pdf_mode = "fast";
+
+        const result = await runCapability("export_document", payload);
+
+        if (result?.ok && result.download_url) {
+          const absolute = `${state.brain.url}${result.download_url}`;
+          aiPush("system", `Export ready: ${result.filename || title}`);
+          window.open(absolute, "_blank");
+        } else {
+          aiPush("system", "Export did not return a download URL.");
+        }
+      } catch (err) {
+        aiPush("system", classifyBrainError(err));
+      } finally {
+        setComposerBusy(false);
+      }
+    }
+
+    function buildExportContent(moduleTarget, text) {
+      if (moduleTarget === "lesson_plan_generate") {
+        return { output: text };
+      }
+      if (moduleTarget === "test_generator") {
+        return { text };
+      }
+      return { text };
+    }
+
+    function mapDocumentType(moduleTarget) {
+      if (moduleTarget === "lesson_plan_generate") return "lesson_plan";
+      if (moduleTarget === "test_generator") return "exam";
+      return "plain_text";
+    }
+
+    function guessExportTitle(moduleTarget, text) {
+      if (moduleTarget === "lesson_plan_generate") return "Lesson Plan";
+      if (moduleTarget === "test_generator") return "Generated Test";
+      if (moduleTarget === "coder") return "Coder Output";
+      const firstLine = String(text || "").split("\n")[0].trim();
+      return firstLine ? firstLine.slice(0, 60) : "MyTalk Export";
+    }
+
+    function slugify(value) {
+      return String(value || "export")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "export";
+    }
+
+    function isExportableMessage(msg) {
+      return msg.role === "brain" && !!(msg.text || "").trim();
+    }
+
+    function parseTags(raw) {
+      return String(raw || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    function detectPipelineType(uploaded, file) {
+      const ext = file.name.toLowerCase().split(".").pop() || "";
+      if (["png", "jpg", "jpeg", "webp"].includes(ext)) return "image";
+      if (ext === "zip") return "zip";
+      if (uploaded?.detected_type) {
+        const low = String(uploaded.detected_type).toLowerCase();
+        if (low.includes("image")) return "image";
+        if (low.includes("zip")) return "zip";
+      }
+      return "document";
+    }
+
+    function isImageFile(file) {
+      const name = String(file?.name || "").toLowerCase();
+      return [".png", ".jpg", ".jpeg", ".webp"].some((ext) => name.endsWith(ext));
+    }
+
+    function isZipFile(file) {
+      return String(file?.name || "").toLowerCase().endsWith(".zip");
+    }
+
+    function stripExt(name) {
+      return String(name || "").replace(/\.[^.]+$/, "");
     }
 
     function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
@@ -1112,7 +1730,11 @@
         ? `${state.brain.url}${state.brain.endpoint || "/chat"}`
         : "No Brain URL saved";
       const lastAction = state.ui.lastActionSummary || "none";
-      els.helperState.textContent = `${lastAction} • ${savedUrl}`;
+      const caps = (state.capabilities.names || []).length;
+      els.helperState.textContent = `${lastAction} • ${caps} caps • ${savedUrl}`;
+      els.capabilitiesNote.textContent = caps
+        ? `Capabilities detected: ${(state.capabilities.names || []).slice(0, 8).join(", ")}${caps > 8 ? "..." : ""}`
+        : "Supported via Brain pipeline: txt, md, pdf, docx, csv, xlsx, pptx, png, jpg, jpeg, webp, zip.";
     }
 
     async function testBrainConnection() {
@@ -1129,6 +1751,7 @@
         if (!res.ok) throw new Error(`Health HTTP ${res.status}`);
         aiPush("system", `Brain reachable at ${healthUrl}`);
         state.brain.lastStatus = "online";
+        await discoverCapabilities();
       } catch (err) {
         aiPush("system", classifyBrainError(err));
         state.brain.lastStatus = "offline";
@@ -1136,6 +1759,42 @@
         saveState();
         refreshBrainStatusUI();
       }
+    }
+
+    async function discoverCapabilities() {
+      const url = `${state.brain.url}/capabilities`;
+      const headers = {};
+      if (state.brain.apiKey) headers["X-API-Key"] = state.brain.apiKey;
+
+      const res = await fetchWithTimeout(url, { method: "GET", headers }, 12000);
+      if (!res.ok) return;
+
+      const data = await res.json().catch(() => null);
+      const names = extractCapabilityNames(data);
+      state.capabilities.names = names;
+      saveState();
+      refreshUIPills();
+
+      if (names.length) {
+        aiPush("system", `Capabilities loaded: ${names.slice(0, 10).join(", ")}${names.length > 10 ? "..." : ""}`);
+      }
+    }
+
+    function extractCapabilityNames(data) {
+      if (Array.isArray(data)) {
+        return data
+          .map((item) => typeof item === "string" ? item : item?.name)
+          .filter(Boolean);
+      }
+      if (Array.isArray(data?.capabilities)) {
+        return data.capabilities
+          .map((item) => typeof item === "string" ? item : item?.name)
+          .filter(Boolean);
+      }
+      if (data && typeof data === "object") {
+        return Object.keys(data).filter(Boolean);
+      }
+      return [];
     }
 
     function safeJson(value) {
