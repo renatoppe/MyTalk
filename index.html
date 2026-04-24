@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.3.0</title>
+  <title>MyTalk v1.3.1</title>
 
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10131a" />
@@ -468,7 +468,7 @@
           <h1>MyTalk</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.3.0</p>
+        <p>Standalone Brain chat client • v1.3.1</p>
       </div>
 
       <div class="top-actions">
@@ -681,7 +681,7 @@
       if (!state.aiChat.messages.length) {
         aiPush(
           "system",
-          "MyTalk v1.3.0 ready. Attach files or try: play spotify on bedroom, create a lesson plan for grade 4 animals 80 minutes, create a short test about food and drinks, or list my projects."
+          "MyTalk v1.3.1 ready. Attach files or try: play spotify on bedroom, create a lesson plan for grade 4 animals 80 minutes, create a short test about food and drinks, or list my projects."
         );
       }
 
@@ -987,7 +987,7 @@
           bubble.appendChild(actionsBox);
         }
 
-        if (msg.role === "brain" && isExportableMessage(msg)) {
+        if (msg.role === "brain" && isExportableMessage(msg) && msg.requestContext?.exportRequested) {
           bubble.appendChild(renderExportCard(msg));
         }
 
@@ -1063,8 +1063,8 @@
       const moduleTarget = msg.requestContext?.moduleTarget || "general";
       head.innerHTML = `
         <div>
-          <div class="export-title">Export result</div>
-          <div class="export-subtitle">${escapeHtml(moduleTarget)} → export_document</div>
+          <div class="export-title">Manual export</div>
+          <div class="export-subtitle">Only runs when you click a button</div>
         </div>
       `;
       wrap.appendChild(head);
@@ -1205,6 +1205,18 @@
       let message = (forceText || els.aiInput.value || "").trim();
       if (!message) return;
 
+      const standaloneExport = parseStandaloneExportRequest(message);
+      if (!forceText && standaloneExport.requested) {
+        const lastBrain = getLastBrainMessage();
+        if (lastBrain) {
+          els.aiInput.value = "";
+          await exportMessage(lastBrain, standaloneExport.format);
+        } else {
+          aiPush("system", "There is no Brain answer to export yet.");
+        }
+        return;
+      }
+
       if (!state.brain.url) {
         aiPush("system", "Set your Brain URL first in Brain Config.");
         openConfigPanel();
@@ -1216,7 +1228,8 @@
       const requestContext = {
         moduleTarget: options.moduleTarget || "general",
         contentIds: options.contentIds || [],
-        attachmentTitle: options.attachmentTitle || ""
+        attachmentTitle: options.attachmentTitle || "",
+        exportRequested: !!options.exportRequested || userAskedExport(message)
       };
 
       aiPush("user", message, { requestContext });
@@ -1261,6 +1274,28 @@
         refreshUIPills();
         setComposerBusy(false);
       }
+    }
+
+    function userAskedExport(message) {
+      const low = String(message || "").toLowerCase();
+      return /\b(export|download|docx|pdf|txt|file|arquivo|baixar|baixavel|baixável|anexo|attachment)\b/.test(low);
+    }
+
+    function parseStandaloneExportRequest(message) {
+      const low = String(message || "").toLowerCase().trim();
+      const requested = /\b(export|download|baixar|arquivo|anexo|attachment)\b/.test(low) || /\b(docx|pdf|txt)\b/.test(low);
+      if (!requested) return { requested: false, format: "txt" };
+      if (/\bpdf\b/.test(low)) return { requested: true, format: "pdf" };
+      if (/\b(docx|word)\b/.test(low)) return { requested: true, format: "docx" };
+      return { requested: true, format: "txt" };
+    }
+
+    function getLastBrainMessage() {
+      const msgs = state.aiChat.messages || [];
+      for (let i = msgs.length - 1; i >= 0; i--) {
+        if (msgs[i].role === "brain" && (msgs[i].text || "").trim()) return msgs[i];
+      }
+      return null;
     }
 
     function maybeApplyDefaultDevice(message) {
