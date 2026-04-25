@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyTalk v1.3.1</title>
+  <title>MyTalk v1.3.2</title>
 
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#10131a" />
@@ -468,7 +468,7 @@
           <h1>MyTalk</h1>
           <span class="title-status" id="brainInlineStatus">🔴 Offline</span>
         </div>
-        <p>Standalone Brain chat client • v1.3.1</p>
+        <p>Standalone Brain chat client • v1.3.2</p>
       </div>
 
       <div class="top-actions">
@@ -614,7 +614,8 @@
         apiKey: "",
         endpoint: "/chat",
         lastStatus: "offline",
-        defaultSpotifyDevice: "bedroom"
+        defaultSpotifyDevice: "bedroom",
+        conversationId: "mytalk_default"
       },
       ui: {
         debug: false,
@@ -681,7 +682,7 @@
       if (!state.aiChat.messages.length) {
         aiPush(
           "system",
-          "MyTalk v1.3.1 ready. Attach files or try: play spotify on bedroom, create a lesson plan for grade 4 animals 80 minutes, create a short test about food and drinks, or list my projects."
+          "MyTalk v1.3.2 ready. Attach files or try: play spotify on bedroom, create a lesson plan for grade 4 animals 80 minutes, create a short test about food and drinks, or list my projects."
         );
       }
 
@@ -1339,6 +1340,31 @@
       els.helperState.textContent = isBusy ? "Sending to Brain..." : "Ready";
     }
 
+    function getConversationId() {
+      if (!state.brain.conversationId) {
+        state.brain.conversationId = `mytalk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        saveState();
+      }
+      return state.brain.conversationId;
+    }
+
+    function getRecentChatHistory(limit = 10, currentMessage = "") {
+      let items = (state.aiChat.messages || [])
+        .filter((msg) => msg.role === "user" || msg.role === "brain")
+        .map((msg) => ({
+          role: msg.role === "brain" ? "assistant" : "user",
+          content: msg.text || ""
+        }))
+        .filter((msg) => msg.content.trim());
+
+      const last = items[items.length - 1];
+      if (last && last.role === "user" && last.content.trim() === String(currentMessage || "").trim()) {
+        items = items.slice(0, -1);
+      }
+
+      return items.slice(-limit);
+    }
+
     async function brainChat(message, requestContext = {}) {
       const url = `${state.brain.url}${state.brain.endpoint || "/chat"}`;
       const headers = { "Content-Type": "application/json" };
@@ -1346,7 +1372,13 @@
 
       const payload = {
         message,
-        scope: "global"
+        scope: "global",
+        conversation_id: getConversationId(),
+        history: getRecentChatHistory(10, message),
+        client: {
+          app: "mytalk",
+          version: "1.3.2"
+        }
       };
 
       if (requestContext.moduleTarget && requestContext.moduleTarget !== "general") {
@@ -1354,6 +1386,9 @@
       }
       if (Array.isArray(requestContext.contentIds) && requestContext.contentIds.length) {
         payload.content_ids = requestContext.contentIds;
+      }
+      if (requestContext.attachmentTitle) {
+        payload.attachment_title = requestContext.attachmentTitle;
       }
 
       const response = await fetchWithTimeout(
